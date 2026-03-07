@@ -4,6 +4,7 @@ import android.app.AppOpsManager
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.net.VpnService
 import android.os.Build
@@ -11,6 +12,7 @@ import android.os.Bundle
 import android.os.Process
 import android.provider.Settings
 import android.view.WindowManager
+import androidx.core.app.ActivityCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -147,6 +149,45 @@ class MainActivity : FlutterActivity() {
                             .filter  { it !in exceeded }
                             .forEach { edit.remove("ext_used_$it") }
                         edit.apply()
+                        result.success(null)
+                    }
+
+                    // ── Sync ALL limited apps so UsageMonitorService can
+                    //    compute real-time usage without waiting for Flutter (Bug 4)
+                    "syncAllLimitedApps" -> {
+                        @Suppress("UNCHECKED_CAST")
+                        val apps = call.argument<List<Map<String, Any>>>("apps") ?: emptyList()
+                        val prefs = getSharedPreferences(
+                            FocusBlockService.PREFS_BLOCK, MODE_PRIVATE
+                        )
+                        val limited = apps.map { it["packageName"] as String }.toSet()
+                        val edit = prefs.edit()
+                            .putStringSet(UsageMonitorService.KEY_ALL_LIMITED, limited)
+                        for (app in apps) {
+                            val pkg = app["packageName"] as String
+                            edit.putString("appname_$pkg", app["appName"] as? String ?: pkg)
+                            edit.putInt("limitmins_$pkg", (app["limitMinutes"] as? Int) ?: 0)
+                        }
+                        edit.apply()
+                        result.success(null)
+                    }
+
+                    // ── Notification permission (Bug 2: Android 13+) ─────────
+                    "hasNotificationPermission" -> {
+                        val granted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) ==
+                                PackageManager.PERMISSION_GRANTED
+                        } else true
+                        result.success(granted)
+                    }
+                    "requestNotificationPermission" -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            ActivityCompat.requestPermissions(
+                                this,
+                                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                                1002
+                            )
+                        }
                         result.success(null)
                     }
 

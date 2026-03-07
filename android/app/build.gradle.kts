@@ -47,4 +47,7 @@ flutter {
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    // NotificationCompat (required for Bug 2+3 countdown notification) and
+    // ActivityCompat.requestPermissions (Bug 2 POST_NOTIFICATIONS on Android 13+).
+    implementation("androidx.core:core-ktx:1.12.0")
 }
