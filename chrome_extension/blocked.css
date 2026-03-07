@@ -1,0 +1,187 @@
+/* ── Reset & base ─────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d2e;
+  --primary: #6c63ff;
+  --primary-dim: rgba(108, 99, 255, 0.18);
+  --secondary: #00d4aa;
+  --text-1: #eaeaf0;
+  --text-2: #9b9bb0;
+  --border: rgba(255, 255, 255, 0.08);
+  --radius: 18px;
+  --radius-sm: 10px;
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* ── Container ──────────────────────────────────────────────── */
+.container {
+  max-width: 480px;
+  width: 90%;
+  text-align: center;
+  padding: 2.5rem 2rem 2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+  animation: fadeUp 0.45s ease both;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Icon ───────────────────────────────────────────────────── */
+.icon-wrap {
+  margin-bottom: 1.25rem;
+}
+
+/* ── Headings ───────────────────────────────────────────────── */
+.title {
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-1);
+  margin-bottom: 0.5rem;
+}
+
+.subtile {
+  color: var(--text-2);
+  font-size: 0.938rem;
+  line-height: 1.55;
+  margin-bottom: 1.25rem;
+}
+
+/* ── Domain badge ───────────────────────────────────────────── */
+.domain-badge {
+  display: inline-block;
+  background: var(--primary-dim);
+  color: var(--primary);
+  border: 1px solid rgba(108, 99, 255, 0.35);
+  border-radius: 99px;
+  padding: 0.25rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-bottom: 1.5rem;
+}
+.domain-badge:empty {
+  display: none;
+}
+
+/* ── Quote ──────────────────────────────────────────────────── */
+.quote {
+  color: var(--secondary);
+  font-size: 1rem;
+  font-style: italic;
+  line-height: 1.6;
+  border-left: 3px solid var(--secondary);
+  padding: 0.5rem 1rem;
+  text-align: left;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: rgba(0, 212, 170, 0.07);
+  margin-bottom: 1.5rem;
+  min-height: 48px;
+}
+
+/* ── Session timer ──────────────────────────────────────────── */
+.session-info {
+  background: var(--primary-dim);
+  border: 1px solid rgba(108, 99, 255, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.session-info.hidden {
+  display: none;
+}
+.session-label {
+  font-size: 0.8rem;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.session-timer {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+/* ── Buttons ────────────────────────────────────────────────── */
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+}
+
+button {
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  padding: 0.625rem 1.4rem;
+  font-size: 0.938rem;
+  font-weight: 600;
+  transition:
+    opacity 0.15s,
+    transform 0.12s;
+}
+button:active {
+  transform: scale(0.96);
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+.btn-primary:hover {
+  opacity: 0.88;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-2);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover {
+  color: var(--text-1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ── Footer ─────────────────────────────────────────────────── */
+.footer {
+  font-size: 0.75rem;
+  color: var(--text-2);
+  opacity: 0.55;
+}

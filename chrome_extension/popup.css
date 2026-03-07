@@ -1,0 +1,433 @@
+/* ── Reset & variables ──────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d2e;
+  --surface2: #20243a;
+  --primary: #6c63ff;
+  --primary-dim: rgba(108, 99, 255, 0.18);
+  --secondary: #00d4aa;
+  --danger: #ff6b6b;
+  --text-1: #eaeaf0;
+  --text-2: #9b9bb0;
+  --border: rgba(255, 255, 255, 0.08);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --popup-w: 340px;
+}
+
+html {
+  width: var(--popup-w);
+  min-height: 480px;
+}
+
+body {
+  width: var(--popup-w);
+  min-height: 480px;
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-size: 14px;
+  overflow-x: hidden;
+}
+
+/* ── Header ─────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* ── Toggle ─────────────────────────────────────────────────── */
+.toggle-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.toggle-wrap input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggle-track {
+  width: 40px;
+  height: 22px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  position: relative;
+  transition: background 0.2s;
+}
+.toggle-wrap input:checked ~ .toggle-track {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: left 0.2s;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+.toggle-wrap input:checked ~ .toggle-track .toggle-thumb {
+  left: 20px;
+}
+
+/* ── Tabs ───────────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  flex: 1;
+  padding: 0.55rem 0;
+  background: none;
+  border: none;
+  color: var(--text-2);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+.tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+.tab:hover:not(.active) {
+  color: var(--text-1);
+}
+
+/* ── Tab panels ─────────────────────────────────────────────── */
+.tab-panel {
+  display: none;
+  padding: 1rem;
+}
+.tab-panel.active {
+  display: block;
+}
+
+/* ── Section label ──────────────────────────────────────────── */
+.section-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-2);
+  margin-bottom: 0.6rem;
+}
+
+/* ── Session ring ───────────────────────────────────────────── */
+.session-active {
+  text-align: center;
+}
+.session-ring {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  margin: 0.5rem auto 1rem;
+}
+.ring-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.ring-bg {
+  fill: none;
+  stroke: var(--surface2);
+  stroke-width: 8;
+}
+.ring-prog {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s linear;
+}
+.ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.ring-time {
+  font-size: 1.45rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-1);
+}
+.ring-label {
+  font-size: 0.7rem;
+  color: var(--text-2);
+}
+
+/* ── Chips ──────────────────────────────────────────────────── */
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+.chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  border-radius: 99px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+}
+.chip.active,
+.chip:hover {
+  background: var(--primary-dim);
+  color: var(--primary);
+  border-color: rgba(108, 99, 255, 0.4);
+}
+
+/* ── Inputs ─────────────────────────────────────────────────── */
+.input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  color: var(--text-1);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.input:focus {
+  border-color: var(--primary);
+}
+.input::placeholder {
+  color: var(--text-2);
+}
+
+.custom-input-row {
+  margin-bottom: 0.6rem;
+}
+
+/* ── Buttons ────────────────────────────────────────────────── */
+.btn-primary,
+.btn-danger {
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition:
+    opacity 0.15s,
+    transform 0.1s;
+}
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+.btn-primary:hover,
+.btn-danger:hover {
+  opacity: 0.85;
+}
+button:active {
+  transform: scale(0.97);
+}
+.btn-full {
+  width: 100%;
+}
+.mt-1 {
+  margin-top: 0.5rem;
+}
+.mt-2 {
+  margin-top: 1rem;
+}
+
+/* ── Card ───────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem 0.9rem;
+}
+.card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-label {
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+.card-hint {
+  font-size: 0.78rem;
+  color: var(--text-2);
+  margin-top: 0.3rem;
+}
+
+/* ── Add row ────────────────────────────────────────────────── */
+.add-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.add-row .input {
+  flex: 1;
+}
+.add-row .btn-primary {
+  padding: 0.5rem 0.85rem;
+  font-size: 1.1rem;
+}
+
+/* ── Site list ──────────────────────────────────────────────── */
+.site-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: 250px;
+  overflow-y: auto;
+}
+.site-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.7rem;
+}
+.site-domain {
+  flex: 1;
+  font-size: 0.88rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.site-item.inactive .site-domain {
+  color: var(--text-2);
+  text-decoration: line-through;
+}
+.site-del {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--danger);
+  font-size: 0.95rem;
+  padding: 0 0.2rem;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+.site-del:hover {
+  opacity: 1;
+}
+.empty-hint {
+  color: var(--text-2);
+  font-size: 0.85rem;
+  padding: 0.4rem 0;
+}
+
+/* ── Stats ──────────────────────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.65rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+.stat-card.wide {
+  grid-column: span 2;
+}
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+.stat-label {
+  font-size: 0.73rem;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Mini chart ─────────────────────────────────────────────── */
+.mini-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 64px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.6rem 0.35rem;
+  overflow: hidden;
+}
+.chart-bar {
+  flex: 1;
+  background: var(--primary-dim);
+  border-radius: 3px 3px 0 0;
+  position: relative;
+  min-height: 4px;
+  transition: height 0.3s;
+}
+.chart-bar:hover {
+  background: var(--primary);
+}
+.chart-bar[data-today] {
+  background: var(--primary);
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 99px;
+}

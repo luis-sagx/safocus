@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>SaFocus</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <!-- ══ HEADER ════════════════════════════════════════════════ -->
+    <header class="header">
+      <div class="logo">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <circle cx="14" cy="14" r="14" fill="#6C63FF" />
+          <circle
+            cx="14"
+            cy="14"
+            r="8"
+            stroke="#fff"
+            stroke-width="2"
+            fill="none"
+            stroke-dasharray="4 2"
+          />
+          <circle cx="14" cy="14" r="3" fill="#fff" />
+        </svg>
+        <span>SaFocus</span>
+      </div>
+      <!-- Global blocking toggle -->
+      <label class="toggle-wrap" title="Activar / desactivar bloqueo global">
+        <input type="checkbox" id="masterToggle" checked />
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      </label>
+    </header>
+
+    <!-- ══ TABS ══════════════════════════════════════════════════ -->
+    <nav class="tabs">
+      <button class="tab active" data-tab="focus">Enfoque</button>
+      <button class="tab" data-tab="sites">Sitios</button>
+      <button class="tab" data-tab="stats">Stats</button>
+    </nav>
+
+    <!-- ══ TAB: FOCUS SESSION ════════════════════════════════════ -->
+    <section class="tab-panel active" id="tab-focus">
+      <!-- Active session view -->
+      <div id="sessionActive" class="session-active hidden">
+        <div class="session-ring">
+          <svg class="ring-svg" viewBox="0 0 110 110">
+            <circle class="ring-bg" cx="55" cy="55" r="48" />
+            <circle
+              class="ring-prog"
+              id="ringProg"
+              cx="55"
+              cy="55"
+              r="48"
+              stroke-dasharray="301.6"
+              stroke-dashoffset="301.6"
+            />
+          </svg>
+          <div class="ring-center">
+            <span class="ring-time" id="ringTime">--:--</span>
+            <span class="ring-label">restantes</span>
+          </div>
+        </div>
+        <button class="btn-danger btn-full mt-2" id="btnStopFocus">
+          Detener sesión
+        </button>
+      </div>
+
+      <!-- Start session view -->
+      <div id="sessionStart">
+        <p class="section-label">Duración de la sesión</p>
+        <div class="chip-group" id="durationChips">
+          <button class="chip" data-min="15">15 min</button>
+          <button class="chip active" data-min="25">25 min</button>
+          <button class="chip" data-min="45">45 min</button>
+          <button class="chip" data-min="60">1 h</button>
+          <button class="chip" data-min="90">1.5 h</button>
+        </div>
+        <div class="custom-input-row">
+          <input
+            type="number"
+            id="customMinutes"
+            min="1"
+            max="480"
+            placeholder="Personalizar (min)"
+            class="input"
+          />
+        </div>
+        <button class="btn-primary btn-full mt-1" id="btnStartFocus">
+          ▶ Iniciar sesión de enfoque
+        </button>
+      </div>
+
+      <!-- Default sites toggle -->
+      <div class="card mt-2">
+        <div class="card-row">
+          <span class="card-label">Bloquear sitios predefinidos</span>
+          <label class="toggle-wrap">
+            <input type="checkbox" id="defaultSitesToggle" checked />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+        <p class="card-hint">Redes sociales, adultos, streaming y más.</p>
+      </div>
+    </section>
+
+    <!-- ══ TAB: SITES ════════════════════════════════════════════ -->
+    <section class="tab-panel" id="tab-sites">
+      <p class="section-label">Mis sitios bloqueados</p>
+
+      <!-- Add site row -->
+      <div class="add-row">
+        <input
+          type="text"
+          id="addSiteInput"
+          class="input"
+          placeholder="ej: facebook.com"
+        />
+        <button class="btn-primary" id="btnAddSite">+</button>
+      </div>
+
+      <ul class="site-list" id="siteList">
+        <li class="empty-hint">No hay sitios personalizados.</li>
+      </ul>
+    </section>
+
+    <!-- ══ TAB: STATS ════════════════════════════════════════════ -->
+    <section class="tab-panel" id="tab-stats">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-value" id="statSessions">0</span>
+          <span class="stat-label">Sesiones</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="statMinutes">0</span>
+          <span class="stat-label">Min enfocado</span>
+        </div>
+        <div class="stat-card wide">
+          <span class="stat-value" id="statBlocked">0</span>
+          <span class="stat-label">Bloqueos totales</span>
+        </div>
+      </div>
+
+      <p class="section-label mt-2">Últimos 7 días</p>
+      <div class="mini-chart" id="miniChart">
+        <!-- bars injected by JS -->
+      </div>
+    </section>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SaFocus — Sitio Bloqueado</title>
+    <link rel="stylesheet" href="blocked.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Logo / Icon area -->
+      <div class="icon-wrap">
+        <svg
+          width="64"
+          height="64"
+          viewBox="0 0 64 64"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle cx="32" cy="32" r="32" fill="#1A1D2E" />
+          <circle
+            cx="32"
+            cy="32"
+            r="20"
+            stroke="#6C63FF"
+            stroke-width="3"
+            fill="none"
+            stroke-dasharray="6 4"
+          />
+          <rect x="26" y="26" width="12" height="12" rx="2" fill="#6C63FF" />
+        </svg>
+      </div>
+
+      <h1 class="title">Sitio Bloqueado</h1>
+      <p class="subtile">
+        Este sitio está bloqueado por <strong>SaFocus</strong> para ayudarte a
+        mantener el enfoque.
+      </p>
+
+      <!-- Domain badge -->
+      <div class="domain-badge" id="domainBadge"></div>
+
+      <!-- Motivational quote -->
+      <blockquote class="quote" id="quoteText"></blockquote>
+
+      <!-- Timer (shown only during focus session) -->
+      <div class="session-info hidden" id="sessionInfo">
+        <span class="session-label">Sesión activa — tiempo restante</span>
+        <span class="session-timer" id="sessionTimer">--:--</span>
+      </div>
+
+      <div class="actions">
+        <button class="btn-primary" id="btnGoBack">← Volver</button>
+        <button class="btn-ghost" id="btnNewTab">Nueva pestaña</button>
+      </div>
+
+      <p class="footer">SaFocus · Enfocado hacia el éxito</p>
+    </div>
+
+    <script src="blocked.js"></script>
+  </body>
+</html>
