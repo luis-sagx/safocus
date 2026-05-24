@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,6 +9,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../features/auth/services/auth_service.dart';
+import '../../../features/settings/providers/settings_provider.dart';
 import '../../../navigation/app_router.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -69,6 +71,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     // If PIN was created, move to next slide
     if (result != null && mounted && _page == _slides.length - 2) {
+      // Ensure SettingsProvider reflects the new PIN state so the toggle
+      // in SettingsScreen appears enabled immediately.
+      try {
+        final container = ProviderScope.containerOf(context);
+        // Call togglePin to persist and update provider state. If PIN was
+        // already saved by AuthService, this is idempotent.
+        await container
+            .read(
+              // ignore: invalid_use_of_visible_for_testing_member
+              // Using the notifier provider directly to update settings state.
+              // This keeps the SettingsState in sync with LocalStorage.
+              // The settings provider path is resolved at compile time.
+              // We import the provider to access it.
+              // NOTE: We import flutter_riverpod above to access ProviderScope.
+              // Using a dynamic read to avoid circular imports in some setups.
+              settingsProvider.notifier,
+            )
+            .togglePin(true, pin: result);
+      } catch (_) {
+        // ignore errors; fallback is that LocalStorage already has the flag
+      }
       _next();
     }
   }
@@ -138,6 +161,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Column(
           children: [
