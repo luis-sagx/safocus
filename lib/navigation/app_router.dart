@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../core/constants/app_constants.dart';
-import '../features/onboarding/screens/onboarding_screen.dart';
-import '../features/home/screens/home_screen.dart';
-import '../features/blocking/screens/blocking_screen.dart';
+
 import '../features/app_limits/screens/app_limits_screen.dart';
+import '../features/blocking/screens/blocking_screen.dart';
+import '../features/home/screens/home_screen.dart';
 import '../features/notifications/screens/notifications_screen.dart';
-import '../features/statistics/screens/statistics_screen.dart';
+import '../features/onboarding/screens/onboarding_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
+import '../features/statistics/screens/statistics_screen.dart';
 import 'app_shell.dart';
 
 abstract class AppRoutes {
@@ -18,6 +17,7 @@ abstract class AppRoutes {
   static const String appLimits = '/app-limits';
   static const String notifications = '/notifications';
   static const String statistics = '/statistics';
+  static const String statisticsBlockedDetails = '/statistics/blocked-details';
   static const String settings = '/settings';
 }
 
@@ -56,6 +56,10 @@ GoRouter buildRouter({required bool showOnboarding}) {
           GoRoute(
             path: AppRoutes.statistics,
             builder: (_, __) => const StatisticsScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.statisticsBlockedDetails,
+            builder: (_, __) => const BlockedAttemptsDetailScreen(),
           ),
           GoRoute(
             path: AppRoutes.settings,

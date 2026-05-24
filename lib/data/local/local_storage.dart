@@ -180,6 +180,19 @@ class LocalStorage {
     await saveUsageStats(stats);
   }
 
+  Future<void> upsertUsageStat(DailyUsageStat stat) async {
+    final stats = getUsageStats();
+    stats.removeWhere(
+      (s) =>
+          s.packageName == stat.packageName &&
+          s.date.year == stat.date.year &&
+          s.date.month == stat.date.month &&
+          s.date.day == stat.date.day,
+    );
+    stats.add(stat);
+    await saveUsageStats(stats);
+  }
+
   // ── Block Attempts ───────────────────────────────────────────────────────
 
   List<BlockAttempt> getBlockAttempts() {

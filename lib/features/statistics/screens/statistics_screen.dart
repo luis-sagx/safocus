@@ -1,15 +1,19 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../core/utils/focus_score.dart';
 import '../../../core/utils/date_utils.dart';
-import '../../../data/local/local_storage.dart';
+import '../../../core/utils/focus_score.dart';
 import '../../../data/models/usage_stat.dart';
-import '../providers/statistics_provider.dart';
+import '../../../navigation/app_router.dart';
+import '../../app_limits/providers/app_limits_provider.dart';
 import '../../auth/screens/auth_screen.dart';
+import '../../blocking/providers/blocking_provider.dart';
+import '../providers/statistics_provider.dart';
 
 class StatisticsScreen extends ConsumerStatefulWidget {
   const StatisticsScreen({super.key});
@@ -31,6 +35,10 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(statisticsProvider);
+    final blockingState = ref.watch(blockingProvider);
+    final hasUsagePermission = ref.watch(
+      appLimitsProvider.select((s) => s.hasUsagePermission),
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -98,7 +106,10 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               sliver: SliverToBoxAdapter(
-                child: _UsageBarChart(stats: state.weekStats),
+                child: _UsageBarChart(
+                  stats: state.weekStats,
+                  hasUsagePermission: hasUsagePermission,
+                ),
               ),
             ),
 
@@ -108,7 +119,11 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               sliver: SliverToBoxAdapter(
-                child: _BlockedAttemptsSection(attempts: state.recentAttempts),
+                child: _BlockedAttemptsSection(
+                  attempts: state.recentAttempts,
+                  activeSitesCount:
+                      blockingState.sites.where((s) => s.isActive).length,
+                ),
               ),
             ),
 
@@ -207,11 +222,48 @@ class _StreakCard extends StatelessWidget {
 // ── Bar chart ──────────────────────────────────────────────────────────────
 
 class _UsageBarChart extends StatelessWidget {
-  const _UsageBarChart({required this.stats});
+  const _UsageBarChart({required this.stats, required this.hasUsagePermission});
   final List<DailyUsageStat> stats;
+  final bool hasUsagePermission;
 
   @override
   Widget build(BuildContext context) {
+    if (stats.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Minutos de uso diario', style: AppTypography.headlineSmall),
+            const SizedBox(height: 12),
+            Text(
+              hasUsagePermission
+                  ? 'Aún no hay historial suficiente para mostrar la gráfica. La app necesita registrar algunos días de uso.'
+                  : 'Activa el permiso de “Uso de apps” para registrar minutos diarios y llenar esta gráfica.',
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            if (!hasUsagePermission) ...[
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: () => context.go(AppRoutes.settings),
+                  icon: const Icon(PhosphorIconsRegular.gear, size: 14),
+                  label: const Text('Ir a ajustes'),
+                ),
+              ),
+            ],
+          ],
+        ),
+      );
+    }
+
     // Aggregate minutes per day label
     final Map<String, int> daily = {};
     for (final s in stats) {
@@ -311,8 +363,12 @@ class _UsageBarChart extends StatelessWidget {
 // ── Enhanced blocked attempts section ─────────────────────────────────────
 
 class _BlockedAttemptsSection extends ConsumerWidget {
-  const _BlockedAttemptsSection({required this.attempts});
+  const _BlockedAttemptsSection({
+    required this.attempts,
+    required this.activeSitesCount,
+  });
   final List<BlockAttempt> attempts;
+  final int activeSitesCount;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -329,18 +385,12 @@ class _BlockedAttemptsSection extends ConsumerWidget {
 
     // Today / week totals
     final todayCount = dailyCounts[0] ?? 0;
-    final weekCount = attempts.length;
-
-    // Monthly count (using all stored attempts)
-    final allAttempts = LocalStorage.instance.getBlockAttempts();
-    final monthAgo = now.subtract(const Duration(days: 30));
-    final monthCount =
-        allAttempts.where((a) => a.timestamp.isAfter(monthAgo)).length;
 
     // Most attempted domain this week
     final Map<String, int> domainCounts = {};
     for (final a in attempts) {
-      domainCounts[a.domain] = (domainCounts[a.domain] ?? 0) + 1;
+      final domain = _normalizeDomain(a.domain);
+      domainCounts[domain] = (domainCounts[domain] ?? 0) + 1;
     }
     String? topDomain;
     int topCount = 0;
@@ -385,36 +435,63 @@ class _BlockedAttemptsSection extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Sitios bloqueados', style: AppTypography.headlineSmall),
-              TextButton.icon(
-                onPressed: () async {
-                  await requireAuth(
-                    context,
-                    onAuthed: () async {
-                      await ref
-                          .read(statisticsProvider.notifier)
-                          .clearBlockedAttempts();
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Historial de bloqueos eliminado.'),
-                          ),
-                        );
-                      }
-                    },
-                  );
-                },
-                icon: const Icon(
-                  PhosphorIconsRegular.trash,
-                  size: 14,
-                  color: AppColors.error,
+              Expanded(
+                child: Text(
+                  'Intentos bloqueados',
+                  style: AppTypography.headlineSmall,
                 ),
-                label: Text(
-                  'Limpiar',
-                  style: AppTypography.labelMedium.copyWith(
-                    color: AppColors.error,
+              ),
+              Wrap(
+                spacing: 4,
+                children: [
+                  TextButton.icon(
+                    onPressed:
+                        () => context.push(AppRoutes.statisticsBlockedDetails),
+                    icon: const Icon(
+                      PhosphorIconsRegular.info,
+                      size: 14,
+                      color: AppColors.primary,
+                    ),
+                    label: Text(
+                      'Detalle',
+                      style: AppTypography.labelMedium.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
                   ),
-                ),
+                  TextButton.icon(
+                    onPressed: () async {
+                      await requireAuth(
+                        context,
+                        onAuthed: () async {
+                          await ref
+                              .read(statisticsProvider.notifier)
+                              .clearBlockedAttempts();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Historial de bloqueos eliminado.',
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                      );
+                    },
+                    icon: const Icon(
+                      PhosphorIconsRegular.trash,
+                      size: 14,
+                      color: AppColors.error,
+                    ),
+                    label: Text(
+                      'Limpiar',
+                      style: AppTypography.labelMedium.copyWith(
+                        color: AppColors.error,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -431,14 +508,14 @@ class _BlockedAttemptsSection extends ConsumerWidget {
               ),
               const SizedBox(width: 8),
               _StatPill(
-                label: 'Semana',
-                value: '$weekCount',
+                label: 'Únicos',
+                value: '${domainCounts.length}',
                 color: AppColors.warning,
               ),
               const SizedBox(width: 8),
               _StatPill(
-                label: '30 días',
-                value: '$monthCount',
+                label: 'Activos',
+                value: '$activeSitesCount',
                 color: AppColors.primary,
               ),
             ],
@@ -466,6 +543,7 @@ class _BlockedAttemptsSection extends ConsumerWidget {
                       style: AppTypography.bodySmall.copyWith(
                         color: AppColors.error,
                       ),
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -533,6 +611,207 @@ class _BlockedAttemptsSection extends ConsumerWidget {
       ),
     );
   }
+}
+
+class BlockedAttemptsDetailScreen extends ConsumerWidget {
+  const BlockedAttemptsDetailScreen();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(statisticsProvider);
+    final blockingState = ref.watch(blockingProvider);
+    final attempts = state.recentAttempts;
+    final activeSitesCount =
+        blockingState.sites.where((s) => s.isActive).length;
+    final now = DateTime.now();
+
+    final Map<String, int> domainCounts = {};
+    final Map<String, String> rawSamples = {};
+    for (final attempt in attempts) {
+      final domain = _normalizeDomain(attempt.domain);
+      domainCounts[domain] = (domainCounts[domain] ?? 0) + 1;
+      rawSamples.putIfAbsent(domain, () => attempt.domain);
+    }
+
+    final sortedDomains =
+        domainCounts.entries.toList()
+          ..sort((a, b) => b.value.compareTo(a.value));
+
+    final todayCount =
+        attempts.where((a) => _isSameDay(a.timestamp, now)).length;
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('Detalle de bloqueos'),
+        backgroundColor: AppColors.background,
+        foregroundColor: AppColors.textPrimary,
+        elevation: 0,
+      ),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+          children: [
+            Text(
+              'Esta pantalla separa los intentos bloqueados de los sitios configurados. Así no se confunden los dominios protegidos con la cantidad de veces que intentaste entrar.',
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                _StatPill(
+                  label: 'Hoy',
+                  value: '$todayCount',
+                  color: AppColors.error,
+                ),
+                const SizedBox(width: 8),
+                _StatPill(
+                  label: 'Semana',
+                  value: '${attempts.length}',
+                  color: AppColors.warning,
+                ),
+                const SizedBox(width: 8),
+                _StatPill(
+                  label: 'Únicos',
+                  value: '${domainCounts.length}',
+                  color: AppColors.primary,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            _StatPill(
+              label: 'Sitios activos',
+              value: '$activeSitesCount',
+              color: AppColors.secondary,
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Sitios configurados (bloqueados)',
+              style: AppTypography.headlineSmall,
+            ),
+            const SizedBox(height: 8),
+            if (blockingState.sites.where((s) => s.isActive).isEmpty)
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'No hay sitios activos configurados.',
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children:
+                      blockingState.sites
+                          .where((s) => s.isActive)
+                          .map(
+                            (s) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Text(
+                                s.domain,
+                                style: AppTypography.bodyMedium,
+                              ),
+                            ),
+                          )
+                          .toList(),
+                ),
+              ),
+            const SizedBox(height: 20),
+            Text('Dominios más bloqueados', style: AppTypography.headlineSmall),
+            const SizedBox(height: 12),
+            if (sortedDomains.isEmpty)
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Text(
+                  'Todavía no hay intentos bloqueados registrados.',
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              )
+            else
+              ...sortedDomains.take(20).map((entry) {
+                final sample = rawSamples[entry.key] ?? entry.key;
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: SelectableText(
+                              entry.key,
+                              style: AppTypography.bodyMedium,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            '${entry.value} veces',
+                            style: AppTypography.labelMedium.copyWith(
+                              color: AppColors.error,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (sample != entry.key) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          'Origen: $sample',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              }),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+bool _isSameDay(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;
+
+String _normalizeDomain(String domain) {
+  final host = domain.toLowerCase().replaceFirst(RegExp(r'^www\.'), '');
+  final parts = host.split('.').where((part) => part.isNotEmpty).toList();
+  if (parts.length <= 2) return host;
+
+  final last = parts[parts.length - 1];
+  final secondLast = parts[parts.length - 2];
+  if (last.length == 2 && secondLast.length <= 3 && parts.length >= 3) {
+    return parts.sublist(parts.length - 3).join('.');
+  }
+  return parts.sublist(parts.length - 2).join('.');
 }
 
 class _StatPill extends StatelessWidget {

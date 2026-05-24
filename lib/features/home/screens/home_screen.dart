@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../core/utils/focus_score.dart';
 import '../../../core/utils/date_utils.dart';
-import '../../../features/blocking/providers/blocking_provider.dart';
+import '../../../core/utils/focus_score.dart';
 import '../../../features/app_limits/providers/app_limits_provider.dart';
+import '../../../features/blocking/providers/blocking_provider.dart';
 import '../../../features/statistics/providers/statistics_provider.dart';
 import '../../../navigation/app_router.dart';
 
@@ -36,12 +37,15 @@ class HomeScreen extends ConsumerWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Image.asset(
-                          'lib/assets/logo.png',
-                          height: 32,
-                          fit: BoxFit.contain,
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: Image.asset(
+                            'lib/assets/logo.png',
+                            height: 32,
+                            fit: BoxFit.contain,
+                          ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 8),
                         Text(
                           now.dayLabel(context),
                           style: AppTypography.bodyMedium.copyWith(

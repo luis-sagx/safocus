@@ -3,9 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../navigation/app_router.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -124,10 +125,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Image.asset(
-                    'lib/assets/logo.png',
-                    height: 36,
-                    fit: BoxFit.contain,
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.asset(
+                      'lib/assets/logo.png',
+                      height: 32,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                   TextButton(
                     onPressed: _finish,

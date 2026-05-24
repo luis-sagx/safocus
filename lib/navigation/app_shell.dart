@@ -46,6 +46,7 @@ class AppShell extends StatelessWidget {
 
   int _currentIndex(BuildContext context) {
     final loc = GoRouterState.of(context).uri.toString();
+    if (loc.startsWith(AppRoutes.statistics)) return 2;
     for (int i = 0; i < _tabs.length; i++) {
       if (loc == _tabs[i].path || (i == 0 && loc == AppRoutes.home)) return i;
     }

@@ -1,8 +1,11 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/constants/app_constants.dart';
+import '../../../core/utils/focus_score.dart' as sf;
 import '../../../data/local/local_storage.dart';
 import '../../../data/models/app_limit.dart';
-import '../../../core/constants/app_constants.dart';
+import '../../../data/models/usage_stat.dart';
 
 class AppLimitsState {
   final List<AppLimit> limits;
@@ -141,7 +144,6 @@ class AppLimitsNotifier extends StateNotifier<AppLimitsState> {
         'getTodayUsage',
       );
       if (result == null) return;
-
       final current =
           state.limits.map((limit) {
             final minutes = (result[limit.packageName] as int?) ?? 0;
@@ -150,6 +152,36 @@ class AppLimitsNotifier extends StateNotifier<AppLimitsState> {
 
       await LocalStorage.instance.saveAppLimits(current);
       state = state.copyWith(limits: current);
+
+      final today = DateTime.now();
+      final normalizedDay = DateTime(today.year, today.month, today.day);
+      final vpnActive = LocalStorage.instance.getBool(AppConstants.keyVpnEnabled);
+      final activeLimits = current
+          .where((limit) => limit.isActive && limit.dailyLimitMinutes > 0)
+          .toList();
+      final respectedRatio = activeLimits.isEmpty
+          ? 1.0
+          : activeLimits.where((limit) => !limit.isExceeded).length /
+                activeLimits.length;
+      final focusScore = sf.calculateFocusScore(
+        vpnActive: vpnActive,
+        limitsRespectedRatio: respectedRatio,
+        notificationsInteracted: false,
+      );
+
+      for (final limit in current.where(
+        (limit) => limit.isActive && limit.dailyLimitMinutes > 0,
+      )) {
+        await LocalStorage.instance.upsertUsageStat(
+          DailyUsageStat(
+            date: normalizedDay,
+            packageName: limit.packageName,
+            appName: limit.appName,
+            usageMinutes: limit.usedMinutesToday,
+            focusScore: focusScore,
+          ),
+        );
+      }
 
       // Push exceeded list to native so UsageMonitorService blocks them.
       await _syncBlockStateToNative(current);

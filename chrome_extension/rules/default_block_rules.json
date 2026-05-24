@@ -169,7 +169,7 @@
       "redirect": { "extensionPath": "/blocked.html" }
     },
     "condition": {
-      "regexFilter": ".*xxx.*",
+      "regexFilter": "^https?://[^/]*xxx[^/]*\\.com",
       "resourceTypes": ["main_frame"]
     }
   }
