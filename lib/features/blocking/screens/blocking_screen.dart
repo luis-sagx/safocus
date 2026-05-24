@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+
+import '../../../core/constants/blocked_sites.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../core/constants/blocked_sites.dart';
 import '../../../data/models/blocked_site.dart';
-import '../providers/blocking_provider.dart';
 import '../../auth/screens/auth_screen.dart';
+import '../providers/blocking_provider.dart';
 
 class BlockingScreen extends ConsumerStatefulWidget {
   const BlockingScreen({super.key});
@@ -63,21 +64,24 @@ class _BlockingScreenState extends ConsumerState<BlockingScreen>
                           activeSites:
                               state.sites.where((s) => s.isActive).length,
                           onToggle: () async {
-                            await requireAuth(
-                              context,
-                              onAuthed: () async {
-                                final ok = await notifier.toggleVpn();
-                                if (!ok && context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'No se pudo activar el VPN. Verifica los permisos.',
-                                      ),
+                            Future<void> runToggle() async {
+                              final ok = await notifier.toggleVpn();
+                              if (!ok && context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'No se pudo activar el VPN. Verifica los permisos.',
                                     ),
-                                  );
-                                }
-                              },
-                            );
+                                  ),
+                                );
+                              }
+                            }
+
+                            if (state.vpnActive) {
+                              await requireAuth(context, onAuthed: runToggle);
+                            } else {
+                              await runToggle();
+                            }
                           },
                         ),
                         const SizedBox(height: 20),
@@ -287,8 +291,16 @@ class _CustomSitesList extends StatelessWidget {
       itemBuilder:
           (_, i) => _SiteTile(
             site: sites[i],
-            onToggle: () => onToggle(sites[i]),
-            onDelete: () => onDelete(sites[i].id),
+            onToggle: () async {
+              if (sites[i].isActive) {
+                await requireAuth(context, onAuthed: () => onToggle(sites[i]));
+              } else {
+                await onToggle(sites[i]);
+              }
+            },
+            onDelete: () async {
+              await requireAuth(context, onAuthed: () => onDelete(sites[i].id));
+            },
           ),
     );
   }
@@ -326,7 +338,16 @@ class _DefaultSitesList extends StatelessWidget {
                 Text(category, style: AppTypography.headlineSmall),
                 Switch(
                   value: allActive,
-                  onChanged: (v) => onCategoryToggle(category, v),
+                  onChanged: (v) async {
+                    if (!v) {
+                      await requireAuth(
+                        context,
+                        onAuthed: () => onCategoryToggle(category, v),
+                      );
+                    } else {
+                      await onCategoryToggle(category, v);
+                    }
+                  },
                   activeColor: AppColors.primary,
                 ),
               ],

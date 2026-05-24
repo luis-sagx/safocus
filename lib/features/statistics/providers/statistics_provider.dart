@@ -116,9 +116,36 @@ class StatisticsNotifier extends StateNotifier<StatisticsState> {
       if (raw == null || raw.isEmpty) return;
 
       final storage = LocalStorage.instance;
+      // Channel to ask native which app was foreground at a timestamp
+      const _blockControl = MethodChannel(AppConstants.channelBlockControl);
+      const browserPkgs = {
+        'com.android.chrome',
+        'com.chrome.beta',
+        'com.chrome.dev',
+        'com.microsoft.emmx',
+        'org.mozilla.firefox',
+        'com.opera.browser',
+      };
       for (final entry in raw) {
         final ts = entry['timestamp'] as int;
         final domain = entry['domain'] as String;
+        // Ask native which package was foreground around this timestamp.
+        String? fg;
+        try {
+          fg = await _blockControl.invokeMethod<String?>(
+            'getForegroundPackageAt',
+            {'timestamp': ts},
+          );
+        } catch (_) {
+          fg = null;
+        }
+
+        // Only record attempts when we detected a known browser as foreground.
+        // If foreground package is unknown (fg == null) we skip to avoid
+        // counting app-originated DNS requests in the stats.
+        if (fg == null || !browserPkgs.contains(fg)) {
+          continue; // omit from statistics since it likely originates from an app or is unknown
+        }
         await storage.addBlockAttempt(
           BlockAttempt(
             timestamp: DateTime.fromMillisecondsSinceEpoch(ts),

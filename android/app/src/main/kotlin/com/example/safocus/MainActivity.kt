@@ -208,6 +208,51 @@ class MainActivity : FlutterActivity() {
                     "hasUsagePermission" -> {
                         result.success(hasUsageStatsPermission())
                     }
+                    "getForegroundPackageAt" -> {
+                        val tsAny = call.argument<Any>("timestamp")
+                        val ts = when (tsAny) {
+                            is Int -> tsAny.toLong()
+                            is Long -> tsAny
+                            is Double -> tsAny.toLong()
+                            else -> null
+                        }
+                        if (ts == null || !hasUsageStatsPermission()) {
+                            result.success(null)
+                        } else {
+                            val usm = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+                            val window = 5000L
+                            val begin = ts - window
+                            val end = ts + window
+                            // Prefer usage stats summary: pick package with latest lastTimeUsed
+                            try {
+                                val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, begin, end)
+                                var bestPkg: String? = null
+                                var bestTime: Long = 0L
+                                for (s in stats) {
+                                    if (s.lastTimeUsed > bestTime) {
+                                        bestTime = s.lastTimeUsed
+                                        bestPkg = s.packageName
+                                    }
+                                }
+                                if (bestPkg != null) {
+                                    result.success(bestPkg)
+                                    return@setMethodCallHandler
+                                }
+                            } catch (_: Exception) {
+                                // fall through to events fallback
+                            }
+                            val events = usm.queryEvents(begin, end)
+                            val ev = android.app.usage.UsageEvents.Event()
+                            var lastPkg: String? = null
+                            while (events.hasNextEvent()) {
+                                events.getNextEvent(ev)
+                                if (ev.eventType == android.app.usage.UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                                    lastPkg = ev.packageName
+                                }
+                            }
+                            result.success(lastPkg)
+                        }
+                    }
                     "openUsageSettings" -> {
                         startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
                         result.success(null)

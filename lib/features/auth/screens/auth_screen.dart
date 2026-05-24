@@ -1,6 +1,8 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../services/auth_service.dart';
@@ -11,7 +13,7 @@ import '../services/auth_service.dart';
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key, required this.onAuthenticated});
 
-  final VoidCallback onAuthenticated;
+  final Future<void> Function() onAuthenticated;
 
   @override
   State<AuthScreen> createState() => _AuthScreenState();
@@ -56,7 +58,9 @@ class _AuthScreenState extends State<AuthScreen> {
 
   Future<void> _tryBiometric() async {
     final ok = await _auth.authenticateWithBiometrics();
-    if (ok && mounted) widget.onAuthenticated();
+    if (ok && mounted) {
+      await widget.onAuthenticated();
+    }
   }
 
   void _onDigit(int digit) {
@@ -88,7 +92,7 @@ class _AuthScreenState extends State<AuthScreen> {
     if (!mounted) return;
 
     if (ok) {
-      widget.onAuthenticated();
+      await widget.onAuthenticated();
     } else {
       setState(() {
         _pin = '';
@@ -376,133 +380,19 @@ Future<bool> requireAuth(
 
   if (!context.mounted) return false;
 
-  final result = await showDialog<bool>(
-    context: context,
-    barrierDismissible: false,
-    builder: (_) => _PinDialog(onAuthed: onAuthed),
+  final result = await Navigator.of(context).push<bool>(
+    MaterialPageRoute(
+      fullscreenDialog: true,
+      builder:
+          (authContext) => AuthScreen(
+            onAuthenticated: () async {
+              await onAuthed();
+              if (authContext.mounted) {
+                Navigator.of(authContext).pop(true);
+              }
+            },
+          ),
+    ),
   );
   return result ?? false;
-}
-
-class _PinDialog extends StatefulWidget {
-  const _PinDialog({required this.onAuthed});
-  final Future<void> Function() onAuthed;
-
-  @override
-  State<_PinDialog> createState() => _PinDialogState();
-}
-
-class _PinDialogState extends State<_PinDialog> {
-  final _auth = AuthService.instance;
-  final _controller = TextEditingController();
-  String _error = '';
-  bool _loading = false;
-  int _expectedLength = 4;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadExpectedLength();
-  }
-
-  Future<void> _loadExpectedLength() async {
-    final len = await _auth.getPinLength();
-    if (mounted) setState(() => _expectedLength = len);
-  }
-
-  Future<void> _verify() async {
-    if (_loading) return;
-    setState(() {
-      _loading = true;
-      _error = '';
-    });
-
-    final pin = _controller.text;
-    if (pin.length != _expectedLength) {
-      setState(() {
-        _error = 'El PIN debe tener exactamente $_expectedLength dígitos';
-        _loading = false;
-      });
-      return;
-    }
-
-    final ok = await _auth.verifyPin(pin);
-    if (!mounted) return;
-
-    if (ok) {
-      await widget.onAuthed();
-      if (mounted) Navigator.pop(context, true);
-    } else {
-      setState(() {
-        _controller.clear();
-        _loading = false;
-        if (_auth.isLockedOut) {
-          _error = 'Demasiados intentos. Espera 1 minuto.';
-        } else {
-          final remaining = AuthService.maxAttempts - _auth.failedAttempts;
-          _error =
-              'PIN incorrecto. $remaining intento${remaining == 1 ? '' : 's'}.';
-        }
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: AppColors.surface,
-      title: Row(
-        children: [
-          const Icon(
-            PhosphorIconsRegular.lock,
-            color: AppColors.primary,
-            size: 20,
-          ),
-          const SizedBox(width: 8),
-          Text('Verificar PIN', style: AppTypography.headlineSmall),
-        ],
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: _controller,
-            keyboardType: TextInputType.number,
-            obscureText: true,
-            maxLength: 6,
-            autofocus: true,
-            decoration: InputDecoration(
-              hintText: 'Ingresa tu PIN',
-              counterText: '',
-              errorText: _error.isNotEmpty ? _error : null,
-            ),
-            onSubmitted: (_) => _verify(),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: _loading ? null : () => Navigator.pop(context, false),
-          child: const Text('Cancelar'),
-        ),
-        ElevatedButton(
-          onPressed: _loading ? null : _verify,
-          child:
-              _loading
-                  ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                  : const Text('Verificar'),
-        ),
-      ],
-    );
-  }
 }

@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../data/models/app_limit.dart';
-import '../providers/app_limits_provider.dart';
 import '../../auth/screens/auth_screen.dart';
+import '../providers/app_limits_provider.dart';
 
 class AppLimitsScreen extends ConsumerWidget {
   const AppLimitsScreen({super.key});
@@ -48,12 +49,7 @@ class AppLimitsScreen extends ConsumerWidget {
             state.limits.isEmpty
                 ? SliverFillRemaining(
                   child: _EmptyState(
-                    onAdd: () async {
-                      await requireAuth(
-                        context,
-                        onAuthed: () => _showAddDialog(context, notifier),
-                      );
-                    },
+                    onAdd: () => _showAddDialog(context, notifier),
                   ),
                 )
                 : SliverPadding(
@@ -65,11 +61,7 @@ class AppLimitsScreen extends ConsumerWidget {
                         (_, i) => _AppLimitCard(
                           limit: state.limits[i],
                           onToggle: () async {
-                            await requireAuth(
-                              context,
-                              onAuthed:
-                                  () => notifier.toggleLimit(state.limits[i]),
-                            );
+                            await notifier.toggleLimit(state.limits[i]);
                           },
                           onDelete: () async {
                             await requireAuth(
@@ -80,17 +72,9 @@ class AppLimitsScreen extends ConsumerWidget {
                             );
                           },
                           onEmergency: () async {
-                            bool result = false;
-                            await requireAuth(
-                              context,
-                              onAuthed: () async {
-                                result = await notifier
-                                    .requestEmergencyExtension(
-                                      state.limits[i].id,
-                                    );
-                              },
+                            return notifier.requestEmergencyExtension(
+                              state.limits[i].id,
                             );
-                            return result;
                           },
                         ),
                   ),
@@ -100,23 +84,12 @@ class AppLimitsScreen extends ConsumerWidget {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          await requireAuth(
-            context,
-            onAuthed: () => _showAddDialog(context, notifier),
-          );
-        },
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddDialog(context, notifier),
         backgroundColor: AppColors.primary,
-        icon: const Icon(
+        child: const Icon(
           PhosphorIconsRegular.plus,
           color: AppColors.textPrimary,
-        ),
-        label: Text(
-          'Agregar app',
-          style: AppTypography.labelLarge.copyWith(
-            color: AppColors.textPrimary,
-          ),
         ),
       ),
     );

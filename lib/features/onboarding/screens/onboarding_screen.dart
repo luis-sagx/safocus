@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../features/auth/services/auth_service.dart';
 import '../../../navigation/app_router.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -43,6 +44,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       accent: AppColors.warning,
     ),
     _Slide(
+      icon: PhosphorIconsFill.lock,
+      title: 'Protégete con un PIN',
+      body:
+          'Configura un PIN de seguridad para proteger tus límites y ajustes. Solo acciones destructivas lo require. Es recomendado.',
+      accent: AppColors.primary,
+      isPinSlide: true,
+    ),
+    _Slide(
       icon: PhosphorIconsFill.prohibit,
       title: 'Bloqueo real de apps',
       body:
@@ -50,6 +59,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       accent: AppColors.error,
     ),
   ];
+
+  Future<void> _openPinSetup() async {
+    if (!mounted) return;
+    final result = await showDialog<String>(
+      context: context,
+      builder: (_) => const _PinSetupDialog(),
+    );
+
+    // If PIN was created, move to next slide
+    if (result != null && mounted && _page == _slides.length - 2) {
+      _next();
+    }
+  }
 
   void _next() {
     if (_page < _slides.length - 1) {
@@ -182,23 +204,63 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     }),
                   ),
                   const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _next,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _slides[_page].accent,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                  // PIN setup buttons (custom UI for PIN slide)
+                  if (_slides[_page].isPinSlide) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _openPinSetup,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _slides[_page].accent,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: Text(
+                          'Crear PIN',
+                          style: AppTypography.labelLarge,
                         ),
                       ),
-                      child: Text(
-                        _page == _slides.length - 1 ? 'Empezar' : 'Siguiente',
-                        style: AppTypography.labelLarge,
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: _next,
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: _slides[_page].accent),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: Text(
+                          'Hacerlo después',
+                          style: AppTypography.labelLarge.copyWith(
+                            color: _slides[_page].accent,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                  ] else
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _next,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _slides[_page].accent,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: Text(
+                          _page == _slides.length - 1 ? 'Empezar' : 'Siguiente',
+                          style: AppTypography.labelLarge,
+                        ),
+                      ),
+                    ),
                   // On the last slide, show permission buttons.
                   if (_page == _slides.length - 1) ...[
                     const SizedBox(height: 12),
@@ -257,11 +319,13 @@ class _Slide {
   final String title;
   final String body;
   final Color accent;
+  final bool isPinSlide;
   const _Slide({
     required this.icon,
     required this.title,
     required this.body,
     required this.accent,
+    this.isPinSlide = false,
   });
 }
 
@@ -302,6 +366,112 @@ class _SlidePage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _PinSetupDialog extends StatefulWidget {
+  const _PinSetupDialog();
+
+  @override
+  State<_PinSetupDialog> createState() => _PinSetupDialogState();
+}
+
+class _PinSetupDialogState extends State<_PinSetupDialog> {
+  final _pinController = TextEditingController();
+  final _confirmController = TextEditingController();
+  String _errorMsg = '';
+
+  @override
+  void dispose() {
+    _pinController.dispose();
+    _confirmController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final p1 = _pinController.text.trim();
+    final p2 = _confirmController.text.trim();
+
+    if (p1.length < 4) {
+      setState(() => _errorMsg = 'Mínimo 4 dígitos');
+      return;
+    }
+    if (p1 != p2) {
+      setState(() => _errorMsg = 'Los PINs no coinciden');
+      return;
+    }
+
+    // Save PIN to AuthService
+    try {
+      await AuthService.instance.setPin(p1);
+      if (mounted) {
+        Navigator.pop(context, p1);
+      }
+    } catch (e) {
+      setState(() => _errorMsg = 'Error al guardar el PIN');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppColors.surface,
+      scrollable: true,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      titlePadding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+      title: Row(
+        children: [
+          const Icon(
+            PhosphorIconsRegular.lockKey,
+            color: AppColors.primary,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text('Crear PIN', style: AppTypography.headlineSmall),
+          ),
+        ],
+      ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _pinController,
+              keyboardType: TextInputType.number,
+              maxLength: 6,
+              obscureText: true,
+              autofocus: true,
+              decoration: const InputDecoration(
+                hintText: 'Nuevo PIN (4–6 dígitos)',
+                counterText: '',
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _confirmController,
+              keyboardType: TextInputType.number,
+              maxLength: 6,
+              obscureText: true,
+              decoration: InputDecoration(
+                hintText: 'Confirmar PIN',
+                counterText: '',
+                errorText: _errorMsg.isNotEmpty ? _errorMsg : null,
+              ),
+              onSubmitted: (_) => _submit(),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(onPressed: _submit, child: const Text('Guardar')),
+      ],
     );
   }
 }

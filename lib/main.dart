@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'core/constants/app_constants.dart';
 import 'core/theme/app_theme.dart';
 import 'data/local/local_storage.dart';
-import 'features/notifications/services/notification_service.dart';
 import 'features/app_limits/services/limit_monitor_service.dart';
-import 'features/auth/services/auth_service.dart';
 import 'features/auth/screens/auth_screen.dart';
+import 'features/notifications/services/notification_service.dart';
 import 'features/settings/providers/settings_provider.dart';
 import 'navigation/app_router.dart';
 
@@ -85,13 +85,8 @@ class _SaFocusAppState extends ConsumerState<SaFocusApp>
     // Start foreground limit monitor
     LimitMonitorService.instance.startForegroundMonitor();
 
-    // Register background task and check initial lock state
+    // Register background task if there are active limits
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // Lock screen on first launch if auth is configured
-      if (AuthService.instance.isAuthEnabled) {
-        setState(() => _isLocked = true);
-      }
-      // Register background task if there are active limits
       final limits = LocalStorage.instance.getAppLimits();
       if (limits.any((l) => l.isActive)) {
         LimitMonitorService.registerBackgroundTask();
@@ -110,10 +105,6 @@ class _SaFocusAppState extends ConsumerState<SaFocusApp>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       LimitMonitorService.instance.startForegroundMonitor();
-      // Re-lock when app comes back to foreground
-      if (AuthService.instance.isAuthEnabled && !_isLocked) {
-        setState(() => _isLocked = true);
-      }
     } else if (state == AppLifecycleState.paused) {
       LimitMonitorService.instance.stopForegroundMonitor();
     }
@@ -140,7 +131,9 @@ class _SaFocusAppState extends ConsumerState<SaFocusApp>
       builder: (context, child) {
         if (_isLocked) {
           return AuthScreen(
-            onAuthenticated: () => setState(() => _isLocked = false),
+            onAuthenticated: () async {
+              setState(() => _isLocked = false);
+            },
           );
         }
         return child ?? const SizedBox.shrink();

@@ -11,7 +11,6 @@ import '../../../core/utils/focus_score.dart';
 import '../../../data/models/usage_stat.dart';
 import '../../../navigation/app_router.dart';
 import '../../app_limits/providers/app_limits_provider.dart';
-import '../../auth/screens/auth_screen.dart';
 import '../../blocking/providers/blocking_provider.dart';
 import '../providers/statistics_provider.dart';
 
@@ -461,23 +460,16 @@ class _BlockedAttemptsSection extends ConsumerWidget {
                   ),
                   TextButton.icon(
                     onPressed: () async {
-                      await requireAuth(
-                        context,
-                        onAuthed: () async {
-                          await ref
-                              .read(statisticsProvider.notifier)
-                              .clearBlockedAttempts();
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Historial de bloqueos eliminado.',
-                                ),
-                              ),
-                            );
-                          }
-                        },
-                      );
+                      await ref
+                          .read(statisticsProvider.notifier)
+                          .clearBlockedAttempts();
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Historial de bloqueos eliminado.'),
+                          ),
+                        );
+                      }
                     },
                     icon: const Icon(
                       PhosphorIconsRegular.trash,
@@ -653,7 +645,7 @@ class BlockedAttemptsDetailScreen extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
           children: [
             Text(
-              'Esta pantalla separa los intentos bloqueados de los sitios configurados. Así no se confunden los dominios protegidos con la cantidad de veces que intentaste entrar.',
+              'Esta pantalla separa los intentos bloqueados de los sitios configurados. ',
               style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -686,50 +678,6 @@ class BlockedAttemptsDetailScreen extends ConsumerWidget {
               value: '$activeSitesCount',
               color: AppColors.secondary,
             ),
-            const SizedBox(height: 20),
-            Text(
-              'Sitios configurados (bloqueados)',
-              style: AppTypography.headlineSmall,
-            ),
-            const SizedBox(height: 8),
-            if (blockingState.sites.where((s) => s.isActive).isEmpty)
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  'No hay sitios activos configurados.',
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              )
-            else
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children:
-                      blockingState.sites
-                          .where((s) => s.isActive)
-                          .map(
-                            (s) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 6),
-                              child: Text(
-                                s.domain,
-                                style: AppTypography.bodyMedium,
-                              ),
-                            ),
-                          )
-                          .toList(),
-                ),
-              ),
             const SizedBox(height: 20),
             Text('Dominios más bloqueados', style: AppTypography.headlineSmall),
             const SizedBox(height: 12),

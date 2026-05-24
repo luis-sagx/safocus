@@ -5,7 +5,6 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../app_limits/providers/app_limits_provider.dart';
-import '../../auth/screens/auth_screen.dart';
 import '../../auth/services/auth_service.dart';
 import '../providers/settings_provider.dart';
 
@@ -97,11 +96,7 @@ class SettingsScreen extends ConsumerWidget {
                       if (v) {
                         await _showPinSetupDialog(context, notifier);
                       } else {
-                        // Require current PIN to disable
-                        await requireAuth(
-                          context,
-                          onAuthed: () => notifier.togglePin(false),
-                        );
+                        await notifier.togglePin(false);
                       }
                     },
                     activeColor: AppColors.primary,
@@ -471,19 +466,14 @@ void _showResetConfirmDialog(
               onPressed: () async {
                 if (dialogCtx.mounted) Navigator.pop(dialogCtx);
                 try {
-                  await requireAuth(
-                    context,
-                    onAuthed: () async {
-                      await notifier.resetAllData();
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Datos eliminados correctamente.'),
-                          ),
-                        );
-                      }
-                    },
-                  );
+                  await notifier.resetAllData();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Datos eliminados correctamente.'),
+                      ),
+                    );
+                  }
                 } catch (_) {
                   // Ignore any error to prevent app crash
                 }
