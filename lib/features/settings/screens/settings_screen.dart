@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../providers/settings_provider.dart';
 import '../../app_limits/providers/app_limits_provider.dart';
-import '../../auth/services/auth_service.dart';
 import '../../auth/screens/auth_screen.dart';
+import '../../auth/services/auth_service.dart';
+import '../providers/settings_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -260,85 +261,13 @@ Future<void> _showPinSetupDialog(
   BuildContext context,
   SettingsNotifier notifier,
 ) async {
-  final ctrl1 = TextEditingController();
-  final ctrl2 = TextEditingController();
-  String errorMsg = '';
-
-  final confirmed = await showDialog<bool>(
+  final pin = await showDialog<String>(
     context: context,
     barrierDismissible: false,
-    builder:
-        (ctx) => StatefulBuilder(
-          builder:
-              (_, setState) => AlertDialog(
-                backgroundColor: AppColors.surface,
-                title: Row(
-                  children: [
-                    const Icon(
-                      PhosphorIconsRegular.lockKey,
-                      color: AppColors.primary,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text('Crear PIN', style: AppTypography.headlineSmall),
-                  ],
-                ),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: ctrl1,
-                      keyboardType: TextInputType.number,
-                      maxLength: 6,
-                      obscureText: true,
-                      autofocus: true,
-                      decoration: const InputDecoration(
-                        hintText: 'Nuevo PIN (4–6 dígitos)',
-                        counterText: '',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: ctrl2,
-                      keyboardType: TextInputType.number,
-                      maxLength: 6,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        hintText: 'Confirmar PIN',
-                        counterText: '',
-                        errorText: errorMsg.isNotEmpty ? errorMsg : null,
-                      ),
-                    ),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx, false),
-                    child: const Text('Cancelar'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      final p1 = ctrl1.text.trim();
-                      final p2 = ctrl2.text.trim();
-                      if (p1.length < 4) {
-                        setState(() => errorMsg = 'Mínimo 4 dígitos');
-                        return;
-                      }
-                      if (p1 != p2) {
-                        setState(() => errorMsg = 'Los PINs no coinciden');
-                        return;
-                      }
-                      Navigator.pop(ctx, true);
-                    },
-                    child: const Text('Guardar'),
-                  ),
-                ],
-              ),
-        ),
+    builder: (_) => const _PinSetupDialog(),
   );
 
-  if (confirmed == true && context.mounted) {
-    final pin = ctrl1.text.trim();
+  if (pin != null && context.mounted) {
     await notifier.togglePin(true, pin: pin);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -346,8 +275,97 @@ Future<void> _showPinSetupDialog(
       );
     }
   }
-  ctrl1.dispose();
-  ctrl2.dispose();
+}
+
+class _PinSetupDialog extends StatefulWidget {
+  const _PinSetupDialog();
+
+  @override
+  State<_PinSetupDialog> createState() => _PinSetupDialogState();
+}
+
+class _PinSetupDialogState extends State<_PinSetupDialog> {
+  final _pinController = TextEditingController();
+  final _confirmController = TextEditingController();
+  String _errorMsg = '';
+
+  @override
+  void dispose() {
+    _pinController.dispose();
+    _confirmController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final p1 = _pinController.text.trim();
+    final p2 = _confirmController.text.trim();
+
+    if (p1.length < 4) {
+      setState(() => _errorMsg = 'Mínimo 4 dígitos');
+      return;
+    }
+    if (p1 != p2) {
+      setState(() => _errorMsg = 'Los PINs no coinciden');
+      return;
+    }
+
+    Navigator.pop(context, p1);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppColors.surface,
+      scrollable: true,
+      title: Row(
+        children: [
+          const Icon(
+            PhosphorIconsRegular.lockKey,
+            color: AppColors.primary,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Text('Crear PIN', style: AppTypography.headlineSmall),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _pinController,
+            keyboardType: TextInputType.number,
+            maxLength: 6,
+            obscureText: true,
+            autofocus: true,
+            decoration: const InputDecoration(
+              hintText: 'Nuevo PIN (4–6 dígitos)',
+              counterText: '',
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _confirmController,
+            keyboardType: TextInputType.number,
+            maxLength: 6,
+            obscureText: true,
+            decoration: InputDecoration(
+              hintText: 'Confirmar PIN',
+              counterText: '',
+              errorText: _errorMsg.isNotEmpty ? _errorMsg : null,
+            ),
+            onSubmitted: (_) => _submit(),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(onPressed: _submit, child: const Text('Guardar')),
+      ],
+    );
+  }
 }
 
 void _showQuietHoursDialog(
