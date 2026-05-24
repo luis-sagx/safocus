@@ -5,7 +5,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../app_limits/providers/app_limits_provider.dart';
-import '../../auth/services/auth_service.dart';
+// auth_service removed — biometric option UI removed from settings
 import '../providers/settings_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -102,63 +102,7 @@ class SettingsScreen extends ConsumerWidget {
                     activeColor: AppColors.primary,
                   ),
                 ),
-                _SettingsTile(
-                  icon: PhosphorIconsRegular.fingerprint,
-                  label: 'Autenticación biométrica',
-                  subtitle: 'Huella o Face ID como alternativa al PIN',
-                  trailing: Switch(
-                    value: settings.biometricEnabled,
-                    onChanged: (v) async {
-                      if (v) {
-                        final auth = AuthService.instance;
-                        final available = await auth.isBiometricAvailable;
-                        if (!available) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'No hay biometría disponible en este dispositivo.',
-                                ),
-                              ),
-                            );
-                          }
-                          return;
-                        }
-                        // Verify biometric works before enabling
-                        final ok = await auth.authenticateWithBiometrics(
-                          reason: 'Confirma tu biometría para activarla',
-                        );
-                        if (ok) await notifier.toggleBiometric(true);
-                      } else {
-                        await notifier.toggleBiometric(false);
-                      }
-                    },
-                    activeColor: AppColors.primary,
-                  ),
-                ),
-              ],
-            ),
-
-            const SliverPadding(padding: EdgeInsets.only(top: 16)),
-
-            // ── Quiet hours ───────────────────────────────────────────
-            _section(
-              context,
-              title: 'Horas de silencio',
-              children: [
-                _SettingsTile(
-                  icon: PhosphorIconsRegular.bellSlash,
-                  label: 'Sin notificaciones',
-                  subtitle:
-                      '${settings.quietStartHour}:00 — ${settings.quietEndHour}:00',
-                  onTap:
-                      () => _showQuietHoursDialog(
-                        context,
-                        notifier,
-                        settings.quietStartHour,
-                        settings.quietEndHour,
-                      ),
-                ),
+                // Biometric authentication option intentionally removed
               ],
             ),
 
@@ -361,84 +305,6 @@ class _PinSetupDialogState extends State<_PinSetupDialog> {
       ],
     );
   }
-}
-
-void _showQuietHoursDialog(
-  BuildContext context,
-  SettingsNotifier notifier,
-  int start,
-  int end,
-) {
-  int _start = start;
-  int _end = end;
-  showDialog(
-    context: context,
-    builder:
-        (ctx) => StatefulBuilder(
-          builder:
-              (_, setState) => AlertDialog(
-                title: const Text('Horas de silencio'),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Inicio', style: AppTypography.bodyMedium),
-                        DropdownButton<int>(
-                          value: _start,
-                          dropdownColor: AppColors.surfaceVariant,
-                          items: List.generate(
-                            24,
-                            (h) => DropdownMenuItem(
-                              value: h,
-                              child: Text('${h.toString().padLeft(2, '0')}:00'),
-                            ),
-                          ),
-                          onChanged: (v) {
-                            if (v != null) setState(() => _start = v);
-                          },
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Fin', style: AppTypography.bodyMedium),
-                        DropdownButton<int>(
-                          value: _end,
-                          dropdownColor: AppColors.surfaceVariant,
-                          items: List.generate(
-                            24,
-                            (h) => DropdownMenuItem(
-                              value: h,
-                              child: Text('${h.toString().padLeft(2, '0')}:00'),
-                            ),
-                          ),
-                          onChanged: (v) {
-                            if (v != null) setState(() => _end = v);
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text('Cancelar'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      notifier.setQuietHours(_start, _end);
-                      Navigator.pop(ctx);
-                    },
-                    child: const Text('Guardar'),
-                  ),
-                ],
-              ),
-        ),
-  );
 }
 
 void _showResetConfirmDialog(
