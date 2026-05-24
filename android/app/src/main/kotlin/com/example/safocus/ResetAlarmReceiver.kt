@@ -28,22 +28,30 @@ class ResetAlarmReceiver : BroadcastReceiver() {
 
     companion object {
         private const val REQUEST_CODE = 7788
+        /** Must match AppConstants.emergencyExtensionMinutes in Dart. */
+        private const val EXTENSION_MINUTES = 5
 
         fun performReset(context: Context) {
             val prefs = context.getSharedPreferences(
                 BlockOverlayActivity.PREFS_BLOCK, Context.MODE_PRIVATE
             )
             val today = todayInGuayaquil()
-            prefs.edit()
+            val edit = prefs.edit()
                 .remove("exceeded_packages")
                 // Record the last native reset date so Flutter can check it.
                 .putString("native_reset_date", today)
-                .apply()
 
-            // Also clear all per-app extension flags.
+            // Clear all per-app extension flags and restore the 5-min extension
+            // that was added to limitmins_* so blocked apps start fresh tomorrow.
             val extKeys = prefs.all.keys.filter { it.startsWith("ext_used_") }
-            val edit = prefs.edit()
-            extKeys.forEach { edit.remove(it) }
+            extKeys.forEach { key ->
+                edit.remove(key)
+                val pkg = key.removePrefix("ext_used_")
+                val storedLimit = prefs.getInt("limitmins_$pkg", 0)
+                if (storedLimit > EXTENSION_MINUTES) {
+                    edit.putInt("limitmins_$pkg", storedLimit - EXTENSION_MINUTES)
+                }
+            }
             edit.apply()
         }
 

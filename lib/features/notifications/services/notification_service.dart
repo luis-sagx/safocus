@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -21,6 +20,9 @@ class NotificationService {
   Future<void> init() async {
     if (_initialized) return;
     tz.initializeTimeZones();
+    // Set local timezone to America/Guayaquil (UTC-5, no DST) so that
+    // zonedSchedule uses the correct local time for Ecuador.
+    tz.setLocalLocation(tz.getLocation('America/Guayaquil'));
 
     const androidSettings = AndroidInitializationSettings(
       '@mipmap/ic_launcher',
@@ -83,6 +85,10 @@ class NotificationService {
     await androidPlugin?.createNotificationChannel(countdownChannel);
 
     _initialized = true;
+
+    // Ensure the POST_NOTIFICATIONS runtime permission is granted (Android 13+).
+    // This is a no-op on older versions or when already granted.
+    await requestPermission();
   }
 
   // Navigation callback key for deep linking

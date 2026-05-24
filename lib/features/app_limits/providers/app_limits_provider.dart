@@ -235,8 +235,18 @@ class AppLimitsNotifier extends StateNotifier<AppLimitsState> {
     final reset =
         state.limits
             .map(
-              (l) =>
-                  l.copyWith(usedMinutesToday: 0, emergencyExtUsedToday: false),
+              (l) => l.copyWith(
+                usedMinutesToday: 0,
+                emergencyExtUsedToday: false,
+                // If a 5-min emergency extension was used today, subtract it
+                // so tomorrow starts with the original configured limit again.
+                dailyLimitMinutes:
+                    l.emergencyExtUsedToday
+                        ? (l.dailyLimitMinutes -
+                                AppConstants.emergencyExtensionMinutes)
+                            .clamp(1, 99999)
+                        : l.dailyLimitMinutes,
+              ),
             )
             .toList();
     await LocalStorage.instance.saveAppLimits(reset);

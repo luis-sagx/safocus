@@ -17,6 +17,7 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.util.Calendar
+import java.util.TimeZone
 
 class MainActivity : FlutterActivity() {
 
@@ -315,7 +316,9 @@ class MainActivity : FlutterActivity() {
 
     private fun getTodayUsageStats(): Map<String, Int> {
         val usm = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        val cal = Calendar.getInstance().apply {
+        // Use Guayaquil timezone (UTC-5, no DST) so the daily counter always
+        // resets at midnight Ecuador time regardless of the device locale.
+        val cal = Calendar.getInstance(TimeZone.getTimeZone("America/Guayaquil")).apply {
             set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0);      set(Calendar.MILLISECOND, 0)
         }

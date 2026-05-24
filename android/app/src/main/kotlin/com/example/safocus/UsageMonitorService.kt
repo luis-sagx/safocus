@@ -11,10 +11,20 @@ import android.app.usage.UsageStatsManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
+import android.graphics.Color
+import android.graphics.PixelFormat
+import android.graphics.Typeface
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.provider.Settings
+import android.view.Gravity
+import android.view.View
+import android.view.WindowManager
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.core.app.NotificationCompat
 import java.util.Calendar
 import java.util.TimeZone
@@ -75,6 +85,11 @@ class UsageMonitorService : Service() {
     private var limitNotifPkg        = ""
     private var lastNotifUpdateTime  = 0L
 
+    // PiP / floating-window system overlay (covers PiP windows, Bug 1 fix)
+    private var pipOverlayView: View? = null
+    private var pipWm: WindowManager? = null
+    private var pipPkg = ""
+
     // ── Poll runnable (every 500 ms) ─────────────────────────────────────────
 
     private val pollRunnable = object : Runnable {
@@ -105,6 +120,7 @@ class UsageMonitorService : Service() {
     override fun onDestroy() {
         handler.removeCallbacks(pollRunnable)
         cancelLimitNotification()
+        removePipBlockOverlay()
         super.onDestroy()
     }
 
@@ -220,7 +236,11 @@ class UsageMonitorService : Service() {
             if (lim <= 0) continue
             if ((getRealTimeUsageMs(usm, pkg) / 60_000) >= lim) blockedNow.add(pkg)
         }
-        if (blockedNow.isEmpty()) return
+        // If nothing blocked, dismiss any lingering PiP overlay.
+        if (blockedNow.isEmpty()) {
+            if (pipOverlayView != null) removePipBlockOverlay()
+            return
+        }
 
         // Query recent usage events and kill blocked apps found running.
         val now    = System.currentTimeMillis()
@@ -238,6 +258,12 @@ class UsageMonitorService : Service() {
             try {
                 am.killBackgroundProcesses(pkg)
                 killed.add(pkg)
+                // Show TYPE_APPLICATION_OVERLAY system window that sits above
+                // PiP windows — normal Activities cannot cover them.
+                val appName   = prefs.getString("appname_$pkg", pkg) ?: pkg
+                val usedMins  = (getRealTimeUsageMs(usm, pkg) / 60_000).toInt()
+                val limitMins = prefs.getInt("limitmins_$pkg", 0)
+                showPipBlockOverlay(appName, pkg, usedMins, limitMins)
             } catch (_: SecurityException) { /* permission not granted — ignore */ }
         }
 
@@ -246,11 +272,172 @@ class UsageMonitorService : Service() {
             for (task in am.appTasks) {
                 val taskPkg = task.taskInfo?.baseActivity?.packageName ?: continue
                 if (taskPkg in IGNORED || taskPkg !in blockedNow) continue
+                if (taskPkg in killed) continue
                 try {
                     am.killBackgroundProcesses(taskPkg)
+                    val appName   = prefs.getString("appname_$taskPkg", taskPkg) ?: taskPkg
+                    val usedMins  = (getRealTimeUsageMs(usm, taskPkg) / 60_000).toInt()
+                    val limitMins = prefs.getInt("limitmins_$taskPkg", 0)
+                    showPipBlockOverlay(appName, taskPkg, usedMins, limitMins)
                 } catch (_: SecurityException) {}
             }
         } catch (_: Exception) {}
+    }
+
+    // ── PiP / floating-window system overlay ────────────────────────────────
+
+    /**
+     * Shows a full-screen TYPE_APPLICATION_OVERLAY window that sits above PiP
+     * windows and all regular activities. This is the only reliable way to block
+     * an app running in picture-in-picture or floating-window mode.
+     *
+     * Requires SYSTEM_ALERT_WINDOW permission (declared in AndroidManifest.xml).
+     * If the permission is not granted, falls back to launching BlockOverlayActivity.
+     */
+    @Suppress("DEPRECATION")
+    private fun showPipBlockOverlay(
+        appName: String,
+        pkg: String,
+        usedMins: Int,
+        limitMins: Int,
+    ) {
+        // If already showing for the same package, do nothing.
+        if (pkg == pipPkg && pipOverlayView != null) return
+
+        // Check SYSTEM_ALERT_WINDOW permission at runtime (Android 6+).
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+            !Settings.canDrawOverlays(this)
+        ) {
+            // No overlay permission — fall back to Activity-based block.
+            triggerBlock(pkg, appName, usedMins, limitMins, System.currentTimeMillis())
+            return
+        }
+
+        // Remove any overlay currently shown for a different package.
+        removePipBlockOverlay()
+
+        val dp = resources.displayMetrics.density
+
+        // ── Root container ────────────────────────────────────────────────
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            setBackgroundColor(Color.parseColor("#0D0D0D"))
+            setPadding(
+                (32 * dp).toInt(), (24 * dp).toInt(),
+                (32 * dp).toInt(), (24 * dp).toInt(),
+            )
+        }
+
+        fun tv(text: String, sizeSp: Float, color: Int, bold: Boolean = false) =
+            TextView(this).apply {
+                this.text = text
+                textSize = sizeSp
+                setTextColor(color)
+                gravity = Gravity.CENTER
+                if (bold) typeface = Typeface.DEFAULT_BOLD
+            }
+
+        fun space(dpVal: Int) = View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, (dpVal * dp).toInt()
+            )
+        }
+
+        root.addView(tv("\uD83D\uDD12", 52f, Color.WHITE))
+        root.addView(space(20))
+        root.addView(tv("Límite alcanzado", 24f, Color.WHITE, bold = true))
+        root.addView(space(8))
+        root.addView(tv(appName, 18f, Color.parseColor("#A0A0A0")))
+        root.addView(space(8))
+        root.addView(
+            tv(
+                "Usaste $usedMins min de un límite de $limitMins min hoy",
+                14f, Color.parseColor("#555555"),
+            )
+        )
+        root.addView(space(40))
+
+        val rowParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+        )
+
+        // "Volver al inicio" button
+        val homeBtn = Button(this).apply {
+            text = "Volver al inicio"
+            setBackgroundColor(Color.parseColor("#7C3AED"))
+            setTextColor(Color.WHITE)
+            textSize = 16f
+            typeface = Typeface.DEFAULT_BOLD
+            setPadding((24*dp).toInt(), (14*dp).toInt(), (24*dp).toInt(), (14*dp).toInt())
+        }
+        homeBtn.setOnClickListener {
+            startActivity(Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            })
+            removePipBlockOverlay()
+        }
+        root.addView(homeBtn, rowParams)
+
+        // "Extensión de emergencia" button (once per day)
+        val prefs = getSharedPreferences(BlockOverlayActivity.PREFS_BLOCK, MODE_PRIVATE)
+        val extUsed = prefs.getBoolean("${BlockOverlayActivity.KEY_EXT_USED}$pkg", false)
+        if (!extUsed) {
+            root.addView(space(12))
+            val extBtn = Button(this).apply {
+                text = "Extensión de emergencia (+5 min)"
+                setBackgroundColor(Color.parseColor("#1F2937"))
+                setTextColor(Color.parseColor("#D1D5DB"))
+                textSize = 14f
+                setPadding((24*dp).toInt(), (12*dp).toInt(), (24*dp).toInt(), (12*dp).toInt())
+            }
+            extBtn.setOnClickListener {
+                val intent = Intent(this@UsageMonitorService, MainActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    putExtra(MainActivity.EXTRA_EMERGENCY_EXT_PKG, pkg)
+                }
+                startActivity(intent)
+                removePipBlockOverlay()
+            }
+            root.addView(extBtn, rowParams)
+        }
+
+        // ── Add to WindowManager ──────────────────────────────────────────
+        val wm = getSystemService(WINDOW_SERVICE) as? WindowManager ?: return
+        val params = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+            else
+                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
+            // No FLAG_NOT_TOUCH_MODAL so all touches are captured (no pass-through to PiP).
+            // No FLAG_NOT_FOCUSABLE so buttons respond to clicks.
+            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
+            PixelFormat.OPAQUE,
+        )
+
+        try {
+            wm.addView(root, params)
+            pipOverlayView = root
+            pipWm = wm
+            pipPkg = pkg
+        } catch (_: Exception) {
+            // Window already added or other error — fall back to activity.
+            triggerBlock(pkg, appName, usedMins, limitMins, System.currentTimeMillis())
+        }
+    }
+
+    private fun removePipBlockOverlay() {
+        pipOverlayView?.let {
+            try { pipWm?.removeView(it) } catch (_: Exception) {}
+        }
+        pipOverlayView = null
+        pipWm = null
+        pipPkg = ""
     }
 
     // ── Bug 2 + 3: Limit countdown notification ──────────────────────────────
