@@ -1,12 +1,13 @@
 import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/blocked_site.dart';
-import '../models/app_limit.dart';
-import '../models/motivational_phrase.dart';
-import '../models/usage_stat.dart';
-import '../../core/constants/app_constants.dart';
+
 import '../../core/constants/blocked_sites.dart';
 import '../../core/constants/motivational_phrases.dart';
+import '../models/app_limit.dart';
+import '../models/blocked_site.dart';
+import '../models/motivational_phrase.dart';
+import '../models/usage_stat.dart';
 
 /// Simple JSON-based persistence on top of SharedPreferences.
 /// Replaces Hive to avoid build_runner requirement in v1.
@@ -191,7 +192,35 @@ class LocalStorage {
   }
 
   Future<void> addBlockAttempt(BlockAttempt attempt) async {
-    final list = getBlockAttempts()..add(attempt);
+    final list = getBlockAttempts();
+    // Prevent adding exact duplicate attempts (same timestamp + domain or same id)
+    final exists = list.any(
+      (a) =>
+          a.id == attempt.id ||
+          (a.domain == attempt.domain && a.timestamp == attempt.timestamp),
+    );
+    if (!exists) {
+      // Additionally, ignore rapid repeated attempts to the same domain
+      // (e.g., multiple resource requests) within a short window.
+      BlockAttempt? lastSame;
+      for (final a in list) {
+        if (a.domain == attempt.domain) {
+          if (lastSame == null || a.timestamp.isAfter(lastSame.timestamp)) {
+            lastSame = a;
+          }
+        }
+      }
+      if (lastSame != null) {
+        final diff =
+            attempt.timestamp.difference(lastSame.timestamp).inSeconds.abs();
+        if (diff <= 5) {
+          return; // skip near-duplicate within 5 seconds
+        }
+      }
+      list.add(attempt);
+    } else {
+      return; // skip saving if duplicate
+    }
     // Keep only last 500 entries
     if (list.length > 500) list.removeRange(0, list.length - 500);
     final encoded = list.map((a) => jsonEncode(a.toJson())).toList();

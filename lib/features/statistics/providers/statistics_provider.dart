@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../data/local/local_storage.dart';
-import '../../../data/models/usage_stat.dart';
+
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/focus_score.dart' as sf;
+import '../../../data/local/local_storage.dart';
+import '../../../data/models/usage_stat.dart';
 
 class StatisticsState {
   final List<DailyUsageStat> weekStats; // last 7 days
@@ -36,7 +39,41 @@ class StatisticsState {
 }
 
 class StatisticsNotifier extends StateNotifier<StatisticsState> {
+  Timer? _syncTimer;
+
   StatisticsNotifier() : super(const StatisticsState()) {
+    // Listen for native notifications about new blocked attempts so we can
+    // sync immediately without requiring the user to manually refresh the UI.
+    _blockedChannel.setMethodCallHandler((call) async {
+      try {
+        if (call.method == 'attemptsAvailable') {
+          await syncBlockedAttempts();
+        } else if (call.method == 'newAttempt') {
+          // Optional: receive a single attempt payload {timestamp:int,domain:String}
+          final args = call.arguments;
+          if (args is Map) {
+            final ts = args['timestamp'] as int?;
+            final domain = args['domain'] as String?;
+            if (ts != null && domain != null) {
+              await LocalStorage.instance.addBlockAttempt(
+                BlockAttempt(
+                  timestamp: DateTime.fromMillisecondsSinceEpoch(ts),
+                  domain: domain,
+                ),
+              );
+              refresh();
+            }
+          }
+        }
+      } on PlatformException {
+        // ignore
+      }
+    });
+
+    _syncTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      syncBlockedAttempts();
+    });
+
     refresh();
   }
 
@@ -156,6 +193,13 @@ class StatisticsNotifier extends StateNotifier<StatisticsState> {
   }
 
   String focusLabel(int score) => sf.focusScoreLabel(score);
+
+  @override
+  void dispose() {
+    _syncTimer?.cancel();
+    _syncTimer = null;
+    super.dispose();
+  }
 }
 
 final statisticsProvider =

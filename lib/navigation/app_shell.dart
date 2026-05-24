@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+
 import '../core/theme/app_colors.dart';
 import 'app_router.dart';
 
@@ -30,6 +31,12 @@ class AppShell extends StatelessWidget {
       path: AppRoutes.statistics,
     ),
     _TabItem(
+      label: 'Límites',
+      icon: PhosphorIconsRegular.clockCountdown,
+      activeIcon: PhosphorIconsFill.clockCountdown,
+      path: AppRoutes.appLimits,
+    ),
+    _TabItem(
       label: 'Ajustes',
       icon: PhosphorIconsRegular.gear,
       activeIcon: PhosphorIconsFill.gear,
@@ -50,20 +57,30 @@ class AppShell extends StatelessWidget {
     final index = _currentIndex(context);
     return Scaffold(
       body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: index,
-        onDestinationSelected: (i) => context.go(_tabs[i].path),
-        destinations: _tabs.map((tab) {
-          final selected = _tabs.indexOf(tab) == index;
-          return NavigationDestination(
-            icon: Icon(
-              tab.icon,
-              color: selected ? AppColors.primary : AppColors.textSecondary,
-            ),
-            selectedIcon: Icon(tab.activeIcon, color: AppColors.primary),
-            label: tab.label,
-          );
-        }).toList(),
+      bottomNavigationBar: NavigationBarTheme(
+        data: NavigationBarThemeData(
+          // smaller labels
+          labelTextStyle: MaterialStateProperty.all(
+            const TextStyle(fontSize: 11),
+          ),
+          // remove the default selection indicator background color
+          indicatorColor: Colors.transparent,
+        ),
+        child: NavigationBar(
+          selectedIndex: index,
+          onDestinationSelected: (i) => context.go(_tabs[i].path),
+          destinations: _tabs.map((tab) {
+            final selected = _tabs.indexOf(tab) == index;
+            return NavigationDestination(
+              icon: Icon(
+                tab.icon,
+                color: selected ? AppColors.primary : AppColors.textSecondary,
+              ),
+              selectedIcon: Icon(tab.activeIcon, color: AppColors.primary),
+              label: tab.label,
+            );
+          }).toList(),
+        ),
       ),
     );
   }
