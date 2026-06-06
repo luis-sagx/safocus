@@ -434,7 +434,7 @@ class _PinSetupDialogState extends State<_PinSetupDialog> {
         Navigator.pop(context, p1);
       }
     } catch (e) {
-      setState(() => _errorMsg = AppStrings.of(context).isEnglish ? 'Error saving PIN' : 'Error al guardar el PIN');
+      setState(() => _errorMsg = AppStrings.of(context).pinSaveError);
     }
   }
 
@@ -469,8 +469,8 @@ class _PinSetupDialogState extends State<_PinSetupDialog> {
               maxLength: 6,
               obscureText: true,
               autofocus: true,
-              decoration: const InputDecoration(
-                hintText: 'Nuevo PIN (4–6 dígitos)',
+              decoration: InputDecoration(
+                hintText: AppStrings.of(context).newPinHint,
                 counterText: '',
               ),
             ),

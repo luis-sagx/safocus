@@ -381,12 +381,7 @@ class _AddLimitSheetState extends State<_AddLimitSheet> {
   int _selectedMinutes = 60;
   bool _saving = false;
 
-  static final _presets = [
-    (label: '15 min', value: 15),
-    (label: '30 min', value: 30),
-    (label: '1 hora', value: 60),
-    (label: '2 horas', value: 120),
-  ];
+  static const _presetValues = [15, 30, 60, 120];
 
   @override
   void initState() {
@@ -423,7 +418,7 @@ class _AddLimitSheetState extends State<_AddLimitSheet> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMsg = 'No se pudieron cargar las apps: $e';
+          _errorMsg = AppStrings.of(context).failedToLoadApps(e.toString());
           _loadingApps = false;
         });
       }
@@ -466,7 +461,6 @@ class _AddLimitSheetState extends State<_AddLimitSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final strings = AppStrings.of(context);
     return AnimatedSize(
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeOut,
@@ -706,13 +700,13 @@ class _AddLimitSheetState extends State<_AddLimitSheet> {
             spacing: 8,
             runSpacing: 8,
             children:
-                _presets.map((p) {
-                  final selected = p.value == _selectedMinutes;
+                _presetValues.map((value) {
+                  final selected = value == _selectedMinutes;
                   return ChoiceChip(
-                    label: Text(strings.presetLabel(p.value)),
+                    label: Text(strings.presetLabel(value)),
                     selected: selected,
                     selectedColor: AppColors.primary.withValues(alpha: 0.25),
-                    onSelected: (_) => setState(() => _selectedMinutes = p.value),
+                    onSelected: (_) => setState(() => _selectedMinutes = value),
                     labelStyle: AppTypography.labelMedium.copyWith(
                       color:
                           selected ? AppColors.primary : AppColors.textPrimary,

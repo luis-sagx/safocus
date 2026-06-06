@@ -49,10 +49,10 @@ class SettingsScreen extends ConsumerWidget {
                       value: settings.themeMode,
                       dropdownColor: AppColors.surfaceVariant,
                       style: AppTypography.bodyMedium,
-                      items: const [
+                      items: [
                         DropdownMenuItem(
                           value: AppThemeMode.dark,
-                          child: Text('Oscuro'),
+                          child: Text(strings.darkTheme),
                         ),
                       ],
                       onChanged: (v) {
@@ -287,8 +287,8 @@ class _PinSetupDialogState extends State<_PinSetupDialog> {
             maxLength: 6,
             obscureText: true,
             autofocus: true,
-            decoration: const InputDecoration(
-              hintText: 'Nuevo PIN (4–6 dígitos)',
+            decoration: InputDecoration(
+              hintText: AppStrings.of(context).newPinHint,
               counterText: '',
             ),
           ),

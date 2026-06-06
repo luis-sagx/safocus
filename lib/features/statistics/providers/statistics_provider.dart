@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_constants.dart';
-import '../../../core/utils/focus_score.dart' as sf;
 import '../../../data/local/local_storage.dart';
 import '../../../data/models/usage_stat.dart';
 
@@ -218,8 +217,6 @@ class StatisticsNotifier extends StateNotifier<StatisticsState> {
     await LocalStorage.instance.addUsageStat(stat);
     refresh();
   }
-
-  String focusLabel(int score) => sf.focusScoreLabel(score);
 
   @override
   void dispose() {

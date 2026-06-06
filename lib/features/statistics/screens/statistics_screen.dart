@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import '../../../core/localization/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/date_utils.dart';
@@ -38,6 +39,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     final hasUsagePermission = ref.watch(
       appLimitsProvider.select((s) => s.hasUsagePermission),
     );
+    final strings = AppStrings.of(context);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -55,11 +57,11 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Estadísticas',
+                          strings.statisticsTitle,
                           style: AppTypography.displayMedium,
                         ),
                         Text(
-                          'Últimos 7 días',
+                          strings.last7Days,
                           style: AppTypography.bodyMedium.copyWith(
                             color: AppColors.textSecondary,
                           ),
@@ -130,7 +132,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
               sliver: SliverToBoxAdapter(
-                child: Text('Uso por app', style: AppTypography.headlineSmall),
+                child: Text(strings.usageByApp, style: AppTypography.headlineSmall),
               ),
             ),
 
@@ -160,6 +162,7 @@ class _ScoreCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = focusScoreColor(score);
+    final strings = AppStrings.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -169,14 +172,14 @@ class _ScoreCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Puntaje hoy', style: AppTypography.labelMedium),
+          Text(strings.todayScore, style: AppTypography.labelMedium),
           const SizedBox(height: 8),
           Text(
             '$score',
             style: AppTypography.displayLarge.copyWith(color: color),
           ),
           Text(
-            focusScoreLabel(score),
+            strings.focusScoreLabel(score),
             style: AppTypography.bodySmall.copyWith(color: color),
           ),
         ],
@@ -191,6 +194,7 @@ class _StreakCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -200,7 +204,7 @@ class _StreakCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Racha', style: AppTypography.labelMedium),
+          Text(strings.streak, style: AppTypography.labelMedium),
           const SizedBox(height: 8),
           Text(
             '$days',
@@ -209,7 +213,7 @@ class _StreakCard extends StatelessWidget {
             ),
           ),
           Text(
-            days == 1 ? 'día' : 'días',
+            strings.dayWord(days),
             style: AppTypography.bodySmall.copyWith(color: AppColors.warning),
           ),
         ],
@@ -227,6 +231,7 @@ class _UsageBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     if (stats.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(20),
@@ -237,12 +242,12 @@ class _UsageBarChart extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Minutos de uso diario', style: AppTypography.headlineSmall),
+            Text(strings.dailyUsageMinutes, style: AppTypography.headlineSmall),
             const SizedBox(height: 12),
             Text(
               hasUsagePermission
-                  ? 'Aún no hay historial suficiente para mostrar la gráfica. La app necesita registrar algunos días de uso.'
-                  : 'Activa el permiso de “Uso de apps” para registrar minutos diarios y llenar esta gráfica.',
+                  ? strings.noUsageHistory
+                  : strings.enableUsageStatsPermission,
               style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -254,7 +259,7 @@ class _UsageBarChart extends StatelessWidget {
                 child: TextButton.icon(
                   onPressed: () => context.go(AppRoutes.settings),
                   icon: const Icon(PhosphorIconsRegular.gear, size: 14),
-                  label: const Text('Ir a ajustes'),
+                  label: Text(strings.goToSettings),
                 ),
               ),
             ],
@@ -301,7 +306,7 @@ class _UsageBarChart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Minutos de uso diario', style: AppTypography.headlineSmall),
+          Text(strings.dailyUsageMinutes, style: AppTypography.headlineSmall),
           const SizedBox(height: 20),
           SizedBox(
             height: 180,
@@ -371,6 +376,7 @@ class _BlockedAttemptsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppStrings.of(context);
     final now = DateTime.now();
 
     // Aggregate per day (last 7 days)
@@ -436,7 +442,7 @@ class _BlockedAttemptsSection extends ConsumerWidget {
             children: [
               Expanded(
                 child: Text(
-                  'Intentos bloqueados',
+                  strings.blockedAttempts,
                   style: AppTypography.headlineSmall,
                 ),
               ),
@@ -452,7 +458,7 @@ class _BlockedAttemptsSection extends ConsumerWidget {
                       color: AppColors.primary,
                     ),
                     label: Text(
-                      'Detalle',
+                      strings.detail,
                       style: AppTypography.labelMedium.copyWith(
                         color: AppColors.primary,
                       ),
@@ -465,8 +471,8 @@ class _BlockedAttemptsSection extends ConsumerWidget {
                           .clearBlockedAttempts();
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Historial de bloqueos eliminado.'),
+                          SnackBar(
+                            content: Text(strings.blockedHistoryDeleted),
                           ),
                         );
                       }
@@ -477,7 +483,7 @@ class _BlockedAttemptsSection extends ConsumerWidget {
                       color: AppColors.error,
                     ),
                     label: Text(
-                      'Limpiar',
+                      strings.clear,
                       style: AppTypography.labelMedium.copyWith(
                         color: AppColors.error,
                       ),
@@ -494,19 +500,19 @@ class _BlockedAttemptsSection extends ConsumerWidget {
           Row(
             children: [
               _StatPill(
-                label: 'Hoy',
+                label: strings.today,
                 value: '$todayCount',
                 color: AppColors.error,
               ),
               const SizedBox(width: 8),
               _StatPill(
-                label: 'Únicos',
+                label: strings.unique,
                 value: '${domainCounts.length}',
                 color: AppColors.warning,
               ),
               const SizedBox(width: 8),
               _StatPill(
-                label: 'Activos',
+                label: strings.activeSitesShort,
                 value: '$activeSitesCount',
                 color: AppColors.primary,
               ),
@@ -531,7 +537,7 @@ class _BlockedAttemptsSection extends ConsumerWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Más intentado: $topDomain ($topCount veces)',
+                      strings.mostAttemptedLabel(topDomain!, topCount),
                       style: AppTypography.bodySmall.copyWith(
                         color: AppColors.error,
                       ),
@@ -610,6 +616,7 @@ class BlockedAttemptsDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppStrings.of(context);
     final state = ref.watch(statisticsProvider);
     final blockingState = ref.watch(blockingProvider);
     final attempts = state.recentAttempts;
@@ -635,7 +642,7 @@ class BlockedAttemptsDetailScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Detalle de bloqueos'),
+        title: Text(strings.blockedDetailsTitle),
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
@@ -645,7 +652,7 @@ class BlockedAttemptsDetailScreen extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
           children: [
             Text(
-              'Esta pantalla separa los intentos bloqueados de los sitios configurados. ',
+              strings.blockedDetailsSubtitle,
               style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -654,19 +661,19 @@ class BlockedAttemptsDetailScreen extends ConsumerWidget {
             Row(
               children: [
                 _StatPill(
-                  label: 'Hoy',
+                  label: strings.today,
                   value: '$todayCount',
                   color: AppColors.error,
                 ),
                 const SizedBox(width: 8),
                 _StatPill(
-                  label: 'Semana',
+                  label: strings.week,
                   value: '${attempts.length}',
                   color: AppColors.warning,
                 ),
                 const SizedBox(width: 8),
                 _StatPill(
-                  label: 'Únicos',
+                  label: strings.unique,
                   value: '${domainCounts.length}',
                   color: AppColors.primary,
                 ),
@@ -674,12 +681,12 @@ class BlockedAttemptsDetailScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             _StatPill(
-              label: 'Sitios activos',
+              label: strings.activeSites,
               value: '$activeSitesCount',
               color: AppColors.secondary,
             ),
             const SizedBox(height: 20),
-            Text('Dominios más bloqueados', style: AppTypography.headlineSmall),
+            Text(strings.mostBlockedDomains, style: AppTypography.headlineSmall),
             const SizedBox(height: 12),
             if (sortedDomains.isEmpty)
               Container(
@@ -689,7 +696,7 @@ class BlockedAttemptsDetailScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(18),
                 ),
                 child: Text(
-                  'Todavía no hay intentos bloqueados registrados.',
+                  strings.noBlockedAttemptsRecorded,
                   style: AppTypography.bodyMedium.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -719,7 +726,7 @@ class BlockedAttemptsDetailScreen extends ConsumerWidget {
                           ),
                           const SizedBox(width: 12),
                           Text(
-                            '${entry.value} veces',
+                            strings.attemptsCount(entry.value),
                             style: AppTypography.labelMedium.copyWith(
                               color: AppColors.error,
                             ),
@@ -729,7 +736,7 @@ class BlockedAttemptsDetailScreen extends ConsumerWidget {
                       if (sample != entry.key) ...[
                         const SizedBox(height: 6),
                         Text(
-                          'Origen: $sample',
+                          strings.origin(sample),
                           style: AppTypography.bodySmall.copyWith(
                             color: AppColors.textSecondary,
                           ),
@@ -803,6 +810,7 @@ class _AppUsageList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     if (aggregated.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(24),
@@ -812,7 +820,7 @@ class _AppUsageList extends StatelessWidget {
         ),
         child: Center(
           child: Text(
-            'Sin datos de uso registrados aún.',
+            strings.noUsageData,
             style: AppTypography.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             ),

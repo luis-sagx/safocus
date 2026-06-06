@@ -23,12 +23,3 @@ Color focusScoreColor(int score) {
   if (score >= 50) return AppColors.warning;
   return AppColors.error;
 }
-
-/// Returns a descriptive label for the score.
-String focusScoreLabel(int score) {
-  if (score >= 90) return 'Excelente';
-  if (score >= 70) return 'Muy bien';
-  if (score >= 50) return 'Regular';
-  if (score >= 30) return 'Mejorable';
-  return 'Bajo';
-}

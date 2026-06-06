@@ -51,7 +51,7 @@ class _BlockingScreenState extends ConsumerState<BlockingScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Bloqueo Web', style: AppTypography.displayMedium),
+                        Text(strings.webBlocking, style: AppTypography.displayMedium),
                         const SizedBox(height: 4),
                         Text(
                           strings.blockWebDescription,
@@ -378,7 +378,6 @@ class _SiteTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = AppStrings.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
@@ -459,9 +458,9 @@ class _AddSiteSheetState extends State<_AddSiteSheet> {
             TextField(
               controller: _ctrl,
               autofocus: true,
-              decoration: const InputDecoration(
-                hintText: 'dominio.com',
-                prefixIcon: Icon(
+              decoration: InputDecoration(
+                hintText: strings.domainPlaceholder,
+                prefixIcon: const Icon(
                   PhosphorIconsRegular.globeSimple,
                   size: 18,
                   color: AppColors.textSecondary,

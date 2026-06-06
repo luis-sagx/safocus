@@ -322,13 +322,13 @@ class _AddPhraseSheetState extends State<_AddPhraseSheet> {
                 Text(strings.languageLabel, style: AppTypography.labelMedium),
                 const SizedBox(width: 8),
                 ChoiceChip(
-                  label: const Text('ES'),
+                  label: Text(strings.spanish),
                   selected: _lang == 'es',
                   onSelected: (_) => setState(() => _lang = 'es'),
                 ),
                 const SizedBox(width: 8),
                 ChoiceChip(
-                  label: const Text('EN'),
+                  label: Text(strings.english),
                   selected: _lang == 'en',
                   onSelected: (_) => setState(() => _lang = 'en'),
                 ),

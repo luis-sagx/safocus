@@ -120,7 +120,7 @@ class HomeScreen extends ConsumerWidget {
                         icon: PhosphorIconsFill.clockCountdown,
                         label: strings.limits,
                         value:
-                            '${limits.limits.where((l) => l.isActive).length} ${strings.isEnglish ? 'active' : 'activos'}',
+                            '${limits.limits.where((l) => l.isActive).length} ${strings.activeShort}',
                         accent: AppColors.primary,
                         onTap: () => context.go(AppRoutes.appLimits),
                       ),
@@ -228,7 +228,7 @@ class _FocusScoreCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = focusScoreColor(score);
-    final label = focusScoreLabel(score);
+    final label = AppStrings.of(context).focusScoreLabel(score);
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(

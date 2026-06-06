@@ -356,6 +356,35 @@ class AppStrings {
       isEnglish ? 'Choose language' : 'Elige idioma';
   String get themeDarkLabel => darkTheme;
 
+  String get pinSaveError =>
+      isEnglish ? 'Error saving PIN' : 'Error al guardar el PIN';
+
+  String get focusScoreExcellent =>
+      isEnglish ? 'Excellent' : 'Excelente';
+  String get focusScoreVeryGood =>
+      isEnglish ? 'Very good' : 'Muy bien';
+  String get focusScoreRegular =>
+      isEnglish ? 'Regular' : 'Regular';
+  String get focusScoreImproving =>
+      isEnglish ? 'Could improve' : 'Mejorable';
+  String get focusScoreLow => isEnglish ? 'Low' : 'Bajo';
+
+  String focusScoreLabel(int score) {
+    if (score >= 90) return focusScoreExcellent;
+    if (score >= 70) return focusScoreVeryGood;
+    if (score >= 50) return focusScoreRegular;
+    if (score >= 30) return focusScoreImproving;
+    return focusScoreLow;
+  }
+
+  String get activeShort => isEnglish ? 'active' : 'activos';
+  String get activeSitesShort => isEnglish ? 'Active' : 'Activos';
+  String attemptsCount(int count) =>
+      isEnglish ? '$count times' : '$count veces';
+  String mostAttemptedLabel(String domain, int count) => isEnglish
+      ? 'Most attempted: $domain ($count times)'
+      : 'Más intentado: $domain ($count veces)';
+
   String presetLabel(int minutes) {
     switch (minutes) {
       case 15:
