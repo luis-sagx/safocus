@@ -1,9 +1,13 @@
 import 'dart:math';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import '../../../data/models/motivational_phrase.dart';
+
 import '../../../core/constants/app_constants.dart';
+import '../../../core/localization/app_strings.dart';
+import '../../../data/local/local_storage.dart';
+import '../../../data/models/motivational_phrase.dart';
 
 /// Wraps flutter_local_notifications for SaFocus.
 class NotificationService {
@@ -15,13 +19,16 @@ class NotificationService {
 
   NotificationService._();
 
+  AppStrings get _strings => AppStrings.forLanguage(
+    LocalStorage.instance.getString(AppConstants.keyLanguage) ?? 'es',
+  );
+
   // ── Init ─────────────────────────────────────────────────────────────────
 
   Future<void> init() async {
     if (_initialized) return;
+
     tz.initializeTimeZones();
-    // Set local timezone to America/Guayaquil (UTC-5, no DST) so that
-    // zonedSchedule uses the correct local time for Ecuador.
     tz.setLocalLocation(tz.getLocation('America/Guayaquil'));
 
     const androidSettings = AndroidInitializationSettings(
@@ -38,36 +45,46 @@ class NotificationService {
       onDidReceiveNotificationResponse: _onNotificationTapped,
     );
 
-    // Create channels
-    const motivationalChannel = AndroidNotificationChannel(
+    final strings = _strings;
+
+    final motivationalChannel = AndroidNotificationChannel(
       AppConstants.notifChannelMotivational,
-      'Motivación',
-      description: 'Recordatorios motivacionales de SaFocus',
+      strings.motivation,
+      description: strings.receiveMotivationalPhrases,
       importance: Importance.defaultImportance,
       showBadge: false,
     );
 
-    const alertsChannel = AndroidNotificationChannel(
+    final alertsChannel = AndroidNotificationChannel(
       AppConstants.notifChannelAlerts,
-      'Alertas de límites',
-      description: 'Alertas cuando se alcanzan los límites de uso',
+      strings.appLimitScreenTitle,
+      description:
+          strings.isEnglish
+              ? 'Usage limit alerts'
+              : 'Alertas de límites de uso',
       importance: Importance.high,
       showBadge: true,
     );
 
-    const limitWarningChannel = AndroidNotificationChannel(
+    final limitWarningChannel = AndroidNotificationChannel(
       AppConstants.notifChannelLimitWarning,
-      'Aviso de límite próximo',
-      description: 'Avisa cuando queden menos de 10 minutos del límite',
+      strings.isEnglish ? 'Limit warning' : 'Aviso de límite próximo',
+      description:
+          strings.isEnglish
+              ? 'Warns when fewer than 10 minutes remain'
+              : 'Avisa cuando queden menos de 10 minutos del límite',
       importance: Importance.high,
       showBadge: true,
       enableVibration: true,
     );
 
-    const countdownChannel = AndroidNotificationChannel(
+    final countdownChannel = AndroidNotificationChannel(
       AppConstants.notifChannelCountdown,
-      'Cuenta atrás de límite',
-      description: 'Notificación persistente con el tiempo restante',
+      strings.timeLimit,
+      description:
+          strings.isEnglish
+              ? 'Persistent notification with the remaining time'
+              : 'Notificación persistente con el tiempo restante',
       importance: Importance.low,
       showBadge: false,
       enableVibration: false,
@@ -85,9 +102,6 @@ class NotificationService {
     await androidPlugin?.createNotificationChannel(countdownChannel);
 
     _initialized = true;
-
-    // Ensure the POST_NOTIFICATIONS runtime permission is granted (Android 13+).
-    // This is a no-op on older versions or when already granted.
     await requestPermission();
   }
 
@@ -106,15 +120,16 @@ class NotificationService {
   // ── Motivational ─────────────────────────────────────────────────────────
 
   Future<void> showMotivationalNow(MotivationalPhrase phrase) async {
+    final strings = _strings;
     await _plugin.show(
       AppConstants.notifMotivationalId,
-      'SaFocus',
+      strings.appName,
       phrase.text,
       NotificationDetails(
         android: AndroidNotificationDetails(
           AppConstants.notifChannelMotivational,
-          'Motivación',
-          channelDescription: 'Recordatorios motivacionales',
+          strings.motivation,
+          channelDescription: strings.receiveMotivationalPhrases,
           importance: Importance.defaultImportance,
           priority: Priority.defaultPriority,
           styleInformation: BigTextStyleInformation(phrase.text),
@@ -135,6 +150,7 @@ class NotificationService {
     required int quietStartHour,
     required int quietEndHour,
   }) async {
+    final strings = _strings;
     await cancelAllMotivational();
     if (phrases.isEmpty) return;
 
@@ -144,12 +160,8 @@ class NotificationService {
     final random = Random();
     final phrase = active[random.nextInt(active.length)];
 
-    // Schedule next notification at interval, respecting quiet hours
     var scheduled = DateTime.now().add(Duration(hours: intervalHours));
-
-    // Skip if in quiet period
     if (quietStartHour > quietEndHour) {
-      // crosses midnight
       if (scheduled.hour >= quietStartHour || scheduled.hour < quietEndHour) {
         scheduled = DateTime(
           scheduled.year,
@@ -165,14 +177,14 @@ class NotificationService {
 
     await _plugin.zonedSchedule(
       AppConstants.notifMotivationalId,
-      'SaFocus',
+      strings.appName,
       phrase.text,
       _toTZDateTime(scheduled),
       NotificationDetails(
         android: AndroidNotificationDetails(
           AppConstants.notifChannelMotivational,
-          'Motivación',
-          channelDescription: 'Recordatorios motivacionales',
+          strings.motivation,
+          channelDescription: strings.receiveMotivationalPhrases,
           importance: Importance.defaultImportance,
           priority: Priority.defaultPriority,
           styleInformation: BigTextStyleInformation(phrase.text),
@@ -195,15 +207,21 @@ class NotificationService {
   // ── App limit alert ──────────────────────────────────────────────────────
 
   Future<void> showAppLimitReached(String appName) async {
+    final strings = _strings;
     await _plugin.show(
       AppConstants.notifAppLimitId,
-      'Límite alcanzado',
-      'Has alcanzado el límite diario para $appName.',
+      strings.isEnglish ? 'Limit reached' : 'Límite alcanzado',
+      strings.isEnglish
+          ? 'You have reached the daily limit for $appName.'
+          : 'Has alcanzado el límite diario para $appName.',
       NotificationDetails(
         android: AndroidNotificationDetails(
           AppConstants.notifChannelAlerts,
-          'Alertas de límites',
-          channelDescription: 'Alertas de límites de uso',
+          strings.appLimitScreenTitle,
+          channelDescription:
+              strings.isEnglish
+                  ? 'Usage limit alerts'
+                  : 'Alertas de límites de uso',
           importance: Importance.high,
           priority: Priority.high,
           icon: '@mipmap/ic_launcher',
@@ -219,31 +237,40 @@ class NotificationService {
 
   // ── Limit warning (< 10 min left) ────────────────────────────────────────
 
-  /// Shows a high-priority notification warning that [remainingMinutes] remain.
-  /// [appIndex] is used to give each app a unique notification ID.
   Future<void> showLimitWarning({
     required String appName,
     required int remainingMinutes,
     required int appIndex,
   }) async {
+    final strings = _strings;
     final body =
         remainingMinutes <= 1
-            ? '¡Menos de 1 minuto restante para $appName!'
-            : '$remainingMinutes minutos restantes para $appName';
+            ? (strings.isEnglish
+                ? 'Less than 1 minute left for $appName!'
+                : '¡Menos de 1 minuto restante para $appName!')
+            : (strings.isEnglish
+                ? '$remainingMinutes minutes left for $appName'
+                : '$remainingMinutes minutos restantes para $appName');
 
     await _plugin.show(
       AppConstants.notifLimitWarningBase + appIndex,
-      '⏰ Límite próximo',
+      strings.isEnglish ? '⏰ Limit soon' : '⏰ Límite próximo',
       body,
       NotificationDetails(
         android: AndroidNotificationDetails(
           AppConstants.notifChannelLimitWarning,
-          'Aviso de límite próximo',
-          channelDescription: 'Avisa cuando queden menos de 10 min',
+          strings.isEnglish ? 'Limit warning' : 'Aviso de límite próximo',
+          channelDescription:
+              strings.isEnglish
+                  ? 'Warns when fewer than 10 minutes remain'
+                  : 'Avisa cuando queden menos de 10 min',
           importance: Importance.high,
           priority: Priority.high,
           icon: '@mipmap/ic_launcher',
-          ticker: 'Límite próximo para $appName',
+          ticker:
+              strings.isEnglish
+                  ? 'Limit soon for $appName'
+                  : 'Límite próximo para $appName',
         ),
         iOS: const DarwinNotificationDetails(
           presentAlert: true,
@@ -255,29 +282,28 @@ class NotificationService {
     );
   }
 
-  // ── Countdown notification (progress bar + MM:SS) ────────────────────────
-
-  /// Updates an ongoing notification with the remaining time as MM:SS
-  /// and a progress bar. Call this every minute (or every second for < 2min).
   Future<void> updateCountdownNotification({
     required String appName,
     required int remainingSeconds,
     required int totalSeconds,
     required int appIndex,
   }) async {
+    final strings = _strings;
     final mins = remainingSeconds ~/ 60;
     final secs = remainingSeconds % 60;
     final timeStr =
         '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
     final progress =
-        (totalSeconds > 0)
+        totalSeconds > 0
             ? ((totalSeconds - remainingSeconds) / totalSeconds * 100).round()
             : 100;
 
     final body =
         remainingSeconds <= 0
-            ? '¡Límite alcanzado!'
-            : 'Tiempo restante: $timeStr';
+            ? (strings.isEnglish ? 'Limit reached!' : '¡Límite alcanzado!')
+            : (strings.isEnglish
+                ? 'Time left: $timeStr'
+                : 'Tiempo restante: $timeStr');
 
     await _plugin.show(
       AppConstants.notifCountdownBase + appIndex,
@@ -286,8 +312,11 @@ class NotificationService {
       NotificationDetails(
         android: AndroidNotificationDetails(
           AppConstants.notifChannelCountdown,
-          'Cuenta atrás de límite',
-          channelDescription: 'Muestra el tiempo restante',
+          strings.timeLimit,
+          channelDescription:
+              strings.isEnglish
+                  ? 'Shows the remaining time'
+                  : 'Muestra el tiempo restante',
           importance: Importance.low,
           priority: Priority.low,
           ongoing: remainingSeconds > 0,
@@ -314,14 +343,11 @@ class NotificationService {
   }
 
   Future<void> cancelAllLimitNotifications() async {
-    // Cancel all per-app limit notifications (up to 20 apps)
     for (int i = 0; i < 20; i++) {
       await _plugin.cancel(AppConstants.notifLimitWarningBase + i);
       await _plugin.cancel(AppConstants.notifCountdownBase + i);
     }
   }
-
-  // ── Request permission ───────────────────────────────────────────────────
 
   Future<bool> requestPermission() async {
     final android =
@@ -332,8 +358,6 @@ class NotificationService {
     final granted = await android?.requestNotificationsPermission();
     return granted ?? true;
   }
-
-  // ── Helper: convert DateTime to tz.TZDateTime ──────────────────────────
 
   tz.TZDateTime _toTZDateTime(DateTime dt) {
     final location = tz.local;

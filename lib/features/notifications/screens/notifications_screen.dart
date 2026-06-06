@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import '../../../core/localization/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../data/models/motivational_phrase.dart';
@@ -11,6 +12,7 @@ class NotificationsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppStrings.of(context);
     final state = ref.watch(notificationsProvider);
     final notifier = ref.read(notificationsProvider.notifier);
 
@@ -26,9 +28,9 @@ class NotificationsScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Motivación', style: AppTypography.displayMedium),
+                    Text(strings.motivation, style: AppTypography.displayMedium),
                     Text(
-                      'Frases que te recuerdan por qué empezaste',
+                      strings.phrasesReminder,
                       style: AppTypography.bodyMedium.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -63,13 +65,13 @@ class NotificationsScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Frases (${state.phrases.length})',
+                      strings.phrasesCount(state.phrases.length),
                       style: AppTypography.headlineSmall,
                     ),
                     TextButton.icon(
                       onPressed: () => _showAddPhraseDialog(context, notifier),
                       icon: const Icon(PhosphorIconsRegular.plus, size: 16),
-                      label: const Text('Agregar'),
+                      label: Text(strings.addPhrase),
                     ),
                   ],
                 ),
@@ -136,6 +138,7 @@ class _SettingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -152,11 +155,11 @@ class _SettingsCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Recordatorios activos',
+                    strings.activeReminders,
                     style: AppTypography.labelLarge,
                   ),
                   Text(
-                    'Recibe frases motivacionales',
+                    strings.receiveMotivationalPhrases,
                     style: AppTypography.bodySmall,
                   ),
                 ],
@@ -172,14 +175,14 @@ class _SettingsCard extends StatelessWidget {
             const SizedBox(height: 16),
             const Divider(color: AppColors.divider),
             const SizedBox(height: 16),
-            Text('Frecuencia', style: AppTypography.headlineSmall),
+            Text(strings.frequency, style: AppTypography.headlineSmall),
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
               children: _intervals.map((h) {
                 final selected = h == intervalHours;
                 return ChoiceChip(
-                  label: Text('Cada ${h}h'),
+                  label: Text(strings.everyHours(h)),
                   selected: selected,
                   selectedColor: AppColors.primary.withOpacity(0.2),
                   onSelected: (_) => onIntervalChange(h),
@@ -293,6 +296,7 @@ class _AddPhraseSheetState extends State<_AddPhraseSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -303,19 +307,19 @@ class _AddPhraseSheetState extends State<_AddPhraseSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Nueva frase', style: AppTypography.headlineMedium),
+            Text(strings.newPhrase, style: AppTypography.headlineMedium),
             const SizedBox(height: 20),
             TextField(
               controller: _ctrl,
               maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: 'Escribe una frase que te inspire...',
+              decoration: InputDecoration(
+                hintText: strings.writeInspiringPhrase,
               ),
             ),
             const SizedBox(height: 12),
             Row(
               children: [
-                Text('Idioma: ', style: AppTypography.labelMedium),
+                Text(strings.languageLabel, style: AppTypography.labelMedium),
                 const SizedBox(width: 8),
                 ChoiceChip(
                   label: const Text('ES'),
@@ -335,7 +339,7 @@ class _AddPhraseSheetState extends State<_AddPhraseSheet> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _loading ? null : _submit,
-                child: const Text('Guardar frase'),
+                child: Text(strings.savePhrase),
               ),
             ),
           ],

@@ -5,6 +5,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/localization/app_strings.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../core/utils/focus_score.dart';
 import '../../../features/app_limits/providers/app_limits_provider.dart';
@@ -17,6 +18,7 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppStrings.of(context);
     final blocking = ref.watch(blockingProvider);
     final limits = ref.watch(appLimitsProvider);
     final stats = ref.watch(statisticsProvider);
@@ -103,8 +105,8 @@ class HomeScreen extends ConsumerWidget {
                             blocking.vpnActive
                                 ? PhosphorIconsFill.shieldCheck
                                 : PhosphorIconsFill.shieldWarning,
-                        label: 'Bloqueo Web',
-                        value: blocking.vpnActive ? 'Activo' : 'Inactivo',
+                        label: strings.webBlocking,
+                        value: blocking.vpnActive ? strings.active : strings.inactive,
                         accent:
                             blocking.vpnActive
                                 ? AppColors.secondary
@@ -116,9 +118,9 @@ class HomeScreen extends ConsumerWidget {
                     Expanded(
                       child: _StatusCard(
                         icon: PhosphorIconsFill.clockCountdown,
-                        label: 'Límites',
+                        label: strings.limits,
                         value:
-                            '${limits.limits.where((l) => l.isActive).length} activos',
+                            '${limits.limits.where((l) => l.isActive).length} ${strings.isEnglish ? 'active' : 'activos'}',
                         accent: AppColors.primary,
                         onTap: () => context.go(AppRoutes.appLimits),
                       ),
@@ -139,8 +141,8 @@ class HomeScreen extends ConsumerWidget {
                     Expanded(
                       child: _MetricCard(
                         icon: PhosphorIconsFill.flame,
-                        label: 'Racha',
-                        value: '${stats.streakDays} días',
+                        label: strings.streak,
+                        value: '${stats.streakDays} ${strings.dayWord(stats.streakDays)}',
                         accent: AppColors.warning,
                       ),
                     ),
@@ -148,7 +150,7 @@ class HomeScreen extends ConsumerWidget {
                     Expanded(
                       child: _MetricCard(
                         icon: PhosphorIconsFill.prohibit,
-                        label: 'Bloq hoy',
+                        label: strings.blockedToday,
                         value:
                             stats.recentAttempts
                                 .where(
@@ -177,11 +179,11 @@ class HomeScreen extends ConsumerWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Límites de uso', style: AppTypography.headlineSmall),
+                    Text(strings.appUsageLimits, style: AppTypography.headlineSmall),
                     TextButton(
                       onPressed: () => context.go(AppRoutes.appLimits),
                       child: Text(
-                        'Ver todos',
+                        strings.seeAll,
                         style: AppTypography.labelMedium.copyWith(
                           color: AppColors.primary,
                         ),
@@ -260,7 +262,7 @@ class _FocusScoreCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Puntaje de Enfoque', style: AppTypography.labelMedium),
+                Text(AppStrings.of(context).focusScore, style: AppTypography.labelMedium),
                 const SizedBox(height: 4),
                 Text(
                   label,
@@ -268,7 +270,7 @@ class _FocusScoreCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Basado en tus límites y bloqueos activos hoy',
+                  AppStrings.of(context).basedOnActiveBlocks,
                   style: AppTypography.bodySmall,
                 ),
               ],
@@ -373,15 +375,15 @@ class _AppLimitRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     final progress = limit.progressRatio as double;
     final remaining = limit.remainingMinutes as int;
     final exceeded = limit.isExceeded as bool;
-    final color =
-        exceeded
-            ? AppColors.error
-            : progress > 0.8
-            ? AppColors.warning
-            : AppColors.primary;
+    final color = exceeded
+      ? AppColors.error
+      : progress > 0.8
+      ? AppColors.warning
+      : AppColors.primary;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -398,8 +400,8 @@ class _AppLimitRow extends StatelessWidget {
               Text(limit.appName as String, style: AppTypography.labelLarge),
               Text(
                 exceeded
-                    ? 'Límite superado'
-                    : '${formatMinutes(remaining)} restantes',
+                    ? strings.limitExceeded
+                    : strings.remainingMinutes(formatMinutes(remaining)),
                 style: AppTypography.labelMedium.copyWith(color: color),
               ),
             ],
@@ -441,17 +443,17 @@ class _EmptyLimits extends StatelessWidget {
             size: 36,
           ),
           const SizedBox(height: 12),
-          Text('Sin límites configurados', style: AppTypography.headlineSmall),
+          Text(AppStrings.of(context).noLimitsConfigured, style: AppTypography.headlineSmall),
           const SizedBox(height: 4),
           Text(
-            'Agrega límites diarios a tus apps distractoras',
+            AppStrings.of(context).addUsageLimitsSubtitle,
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
-          OutlinedButton(onPressed: onAdd, child: const Text('Agregar límite')),
+          OutlinedButton(onPressed: onAdd, child: Text(AppStrings.of(context).addLimit)),
         ],
       ),
     );
@@ -466,6 +468,7 @@ class _PermissionBanner extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppStrings.of(context);
     final notifier = ref.read(appLimitsProvider.notifier);
 
     return Container(
@@ -488,7 +491,7 @@ class _PermissionBanner extends ConsumerWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'El bloqueo de apps no está activo',
+                  strings.blockingNotActiveTitle,
                   style: AppTypography.labelMedium.copyWith(
                     color: AppColors.error,
                   ),
@@ -497,18 +500,13 @@ class _PermissionBanner extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 6),
-          Text(
-            'Faltan permisos para que SaFocus bloquee apps al superar el límite diario.',
-            style: AppTypography.bodySmall.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
+          Text(strings.missingPermissionsBanner, style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary)),
           const SizedBox(height: 10),
           Row(
             children: [
               if (!state.hasUsagePermission)
                 _BannerButton(
-                  label: 'Uso de apps',
+                  label: AppStrings.of(context).usageStats,
                   onTap: () async {
                     await notifier.openUsageSettings();
                     await Future.delayed(const Duration(seconds: 1));
@@ -519,7 +517,7 @@ class _PermissionBanner extends ConsumerWidget {
                 const SizedBox(width: 8),
               if (!state.hasOverlayPermission)
                 _BannerButton(
-                  label: 'Superponer ventanas',
+                  label: AppStrings.of(context).overlayWindows,
                   onTap: () async {
                     await notifier.openOverlaySettings();
                     await Future.delayed(const Duration(seconds: 1));

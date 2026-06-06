@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../localization/app_strings.dart';
+
 extension SfDateUtils on DateTime {
   /// Returns midnight for this date.
   DateTime get midnight => DateTime(year, month, day);
@@ -11,8 +13,9 @@ extension SfDateUtils on DateTime {
   /// Friendly label: "Today", "Yesterday" or locale‑aware short date.
   String dayLabel(BuildContext context) {
     final now = DateTime.now();
-    if (isSameDay(now)) return 'Hoy';
-    if (isSameDay(now.subtract(const Duration(days: 1)))) return 'Ayer';
+    final strings = AppStrings.of(context);
+    if (isSameDay(now)) return strings.today;
+    if (isSameDay(now.subtract(const Duration(days: 1)))) return strings.yesterday;
     return '$day/${month.toString().padLeft(2, '0')}/$year';
   }
 }

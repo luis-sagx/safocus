@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../core/constants/blocked_sites.dart';
+import '../../../core/localization/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../data/models/blocked_site.dart';
@@ -34,6 +35,7 @@ class _BlockingScreenState extends ConsumerState<BlockingScreen>
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     final state = ref.watch(blockingProvider);
     final notifier = ref.read(blockingProvider.notifier);
 
@@ -52,7 +54,7 @@ class _BlockingScreenState extends ConsumerState<BlockingScreen>
                         Text('Bloqueo Web', style: AppTypography.displayMedium),
                         const SizedBox(height: 4),
                         Text(
-                          'Activa el escudo VPN para bloquear sitios distractores',
+                          strings.blockWebDescription,
                           style: AppTypography.bodyMedium.copyWith(
                             color: AppColors.textSecondary,
                           ),
@@ -68,11 +70,7 @@ class _BlockingScreenState extends ConsumerState<BlockingScreen>
                               final ok = await notifier.toggleVpn();
                               if (!ok && context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'No se pudo activar el VPN. Verifica los permisos.',
-                                    ),
-                                  ),
+                                  SnackBar(content: Text(strings.vpnCouldNotActivate)),
                                 );
                               }
                             }
@@ -93,9 +91,9 @@ class _BlockingScreenState extends ConsumerState<BlockingScreen>
                           labelStyle: AppTypography.labelLarge,
                           unselectedLabelStyle: AppTypography.labelMedium,
                           dividerColor: AppColors.divider,
-                          tabs: const [
-                            Tab(text: 'Mis sitios'),
-                            Tab(text: 'Predefinidos'),
+                          tabs: [
+                            Tab(text: strings.mySites),
+                            Tab(text: strings.predefined),
                           ],
                         ),
                       ],
@@ -166,6 +164,7 @@ class _VpnCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     final color = isActive ? AppColors.secondary : AppColors.textSecondary;
     return GestureDetector(
       onTap: onToggle,
@@ -207,13 +206,13 @@ class _VpnCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isActive ? 'Escudo Activo' : 'Escudo Inactivo',
+                    isActive ? strings.shieldActive : strings.shieldInactive,
                     style: AppTypography.headlineSmall.copyWith(color: color),
                   ),
                   Text(
                     isActive
-                        ? '$activeSites sitios bloqueados'
-                        : 'Toca para activar el bloqueo VPN',
+                        ? strings.customSitesCount(activeSites)
+                        : strings.tapToEnableVpn,
                     style: AppTypography.bodySmall,
                   ),
                 ],
@@ -247,6 +246,7 @@ class _CustomSitesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     if (sites.isEmpty) {
       return Center(
         child: Padding(
@@ -260,13 +260,10 @@ class _CustomSitesList extends StatelessWidget {
                 size: 48,
               ),
               const SizedBox(height: 16),
-              Text(
-                'Sin sitios personalizados',
-                style: AppTypography.headlineSmall,
-              ),
+              Text(strings.noCustomSites, style: AppTypography.headlineSmall),
               const SizedBox(height: 8),
               Text(
-                'Agrega URLs que quieres bloquear',
+                strings.addUrlsToBlock,
                 style: AppTypography.bodyMedium.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -276,7 +273,7 @@ class _CustomSitesList extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: onAdd,
                 icon: const Icon(PhosphorIconsRegular.plus, size: 16),
-                label: const Text('Agregar sitio'),
+                label: Text(strings.addSite),
               ),
             ],
           ),
@@ -320,6 +317,7 @@ class _DefaultSitesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     final categories = BlockedSites.defaultByCategory.keys.toList();
     return ListView.builder(
       padding: const EdgeInsets.all(24),
@@ -335,7 +333,7 @@ class _DefaultSitesList extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(category, style: AppTypography.headlineSmall),
+                Text(BlockedSites.localizedCategory(category, strings.languageCode), style: AppTypography.headlineSmall),
                 Switch(
                   value: allActive,
                   onChanged: (v) async {
@@ -380,6 +378,7 @@ class _SiteTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
@@ -439,6 +438,7 @@ class _AddSiteSheetState extends State<_AddSiteSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -449,10 +449,10 @@ class _AddSiteSheetState extends State<_AddSiteSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Agregar sitio', style: AppTypography.headlineMedium),
+            Text(strings.addSite, style: AppTypography.headlineMedium),
             const SizedBox(height: 6),
             Text(
-              'Introduce el dominio sin "https://" (ej. facebook.com)',
+              strings.enterDomainWithoutHttps,
               style: AppTypography.bodySmall,
             ),
             const SizedBox(height: 20),
@@ -483,7 +483,7 @@ class _AddSiteSheetState extends State<_AddSiteSheet> {
                           height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                        : const Text('Agregar'),
+                        : Text(strings.addPhrase),
               ),
             ),
           ],

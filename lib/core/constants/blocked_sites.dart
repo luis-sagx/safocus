@@ -54,4 +54,22 @@ abstract class BlockedSites {
   // Flat access
   static List<String> get allDefaults =>
       defaultByCategory.values.expand((l) => l).toList();
+
+  static String localizedCategory(String category, String languageCode) {
+    final isEnglish = languageCode.toLowerCase().startsWith('en');
+    switch (category) {
+      case 'Redes sociales':
+        return isEnglish ? 'Social networks' : category;
+      case 'Adulto':
+        return isEnglish ? 'Adult' : category;
+      case 'Video / streaming':
+        return category;
+      case 'Apuestas / juegos':
+        return isEnglish ? 'Betting / games' : category;
+      case 'Noticias / clickbait':
+        return isEnglish ? 'News / clickbait' : category;
+      default:
+        return category;
+    }
+  }
 }

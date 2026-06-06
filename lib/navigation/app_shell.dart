@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../core/theme/app_colors.dart';
+import '../core/localization/app_strings.dart';
 import 'app_router.dart';
 
 /// Bottom navigation shell: Home | Bloqueo | Estadísticas | Configuración.
@@ -11,51 +12,53 @@ class AppShell extends StatelessWidget {
 
   final Widget child;
 
-  static const _tabs = [
+  List<_TabItem> _tabs(AppStrings strings) => [
     _TabItem(
-      label: 'Inicio',
+      label: strings.home,
       icon: PhosphorIconsRegular.house,
       activeIcon: PhosphorIconsFill.house,
       path: AppRoutes.home,
     ),
     _TabItem(
-      label: 'Bloqueo',
+      label: strings.blocking,
       icon: PhosphorIconsRegular.shieldSlash,
       activeIcon: PhosphorIconsFill.shieldSlash,
       path: AppRoutes.blocking,
     ),
     _TabItem(
-      label: 'Estadísticas',
+      label: strings.statistics,
       icon: PhosphorIconsRegular.chartBar,
       activeIcon: PhosphorIconsFill.chartBar,
       path: AppRoutes.statistics,
     ),
     _TabItem(
-      label: 'Límites',
+      label: strings.limits,
       icon: PhosphorIconsRegular.clockCountdown,
       activeIcon: PhosphorIconsFill.clockCountdown,
       path: AppRoutes.appLimits,
     ),
     _TabItem(
-      label: 'Ajustes',
+      label: strings.settings,
       icon: PhosphorIconsRegular.gear,
       activeIcon: PhosphorIconsFill.gear,
       path: AppRoutes.settings,
     ),
   ];
 
-  int _currentIndex(BuildContext context) {
+  int _currentIndex(BuildContext context, List<_TabItem> tabs) {
     final loc = GoRouterState.of(context).uri.toString();
     if (loc.startsWith(AppRoutes.statistics)) return 2;
-    for (int i = 0; i < _tabs.length; i++) {
-      if (loc == _tabs[i].path || (i == 0 && loc == AppRoutes.home)) return i;
+    for (int i = 0; i < tabs.length; i++) {
+      if (loc == tabs[i].path || (i == 0 && loc == AppRoutes.home)) return i;
     }
     return 0;
   }
 
   @override
   Widget build(BuildContext context) {
-    final index = _currentIndex(context);
+    final strings = AppStrings.of(context);
+    final tabs = _tabs(strings);
+    final index = _currentIndex(context, tabs);
     return Scaffold(
       body: child,
       bottomNavigationBar: NavigationBarTheme(
@@ -69,9 +72,9 @@ class AppShell extends StatelessWidget {
         ),
         child: NavigationBar(
           selectedIndex: index,
-          onDestinationSelected: (i) => context.go(_tabs[i].path),
-          destinations: _tabs.map((tab) {
-            final selected = _tabs.indexOf(tab) == index;
+          onDestinationSelected: (i) => context.go(tabs[i].path),
+          destinations: tabs.map((tab) {
+            final selected = tabs.indexOf(tab) == index;
             return NavigationDestination(
               icon: Icon(
                 tab.icon,

@@ -4,6 +4,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/localization/app_strings.dart';
 import '../../app_limits/providers/app_limits_provider.dart';
 // auth_service removed — biometric option UI removed from settings
 import '../providers/settings_provider.dart';
@@ -13,6 +14,7 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppStrings.of(context);
     final settings = ref.watch(settingsProvider);
     final notifier = ref.read(settingsProvider.notifier);
 
@@ -26,7 +28,7 @@ class SettingsScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
               sliver: SliverToBoxAdapter(
                 child: Text(
-                  'Configuración',
+                  strings.settings,
                   style: AppTypography.displayMedium,
                 ),
               ),
@@ -37,11 +39,11 @@ class SettingsScreen extends ConsumerWidget {
             // ── Appearance ───────────────────────────────────────────
             _section(
               context,
-              title: 'Apariencia',
+              title: strings.appearance,
               children: [
                 _SettingsTile(
                   icon: PhosphorIconsRegular.moon,
-                  label: 'Tema',
+                  label: strings.theme,
                   trailing: DropdownButtonHideUnderline(
                     child: DropdownButton<AppThemeMode>(
                       value: settings.themeMode,
@@ -61,14 +63,21 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 _SettingsTile(
                   icon: PhosphorIconsRegular.translate,
-                  label: 'Idioma',
+                  label: strings.language,
                   trailing: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       value: settings.language,
                       dropdownColor: AppColors.surfaceVariant,
                       style: AppTypography.bodyMedium,
-                      items: const [
-                        DropdownMenuItem(value: 'es', child: Text('Español')),
+                      items: [
+                        DropdownMenuItem(
+                          value: 'es',
+                          child: Text(strings.spanish),
+                        ),
+                        DropdownMenuItem(
+                          value: 'en',
+                          child: Text(strings.english),
+                        ),
                       ],
                       onChanged: (v) {
                         if (v != null) notifier.setLanguage(v);
@@ -84,12 +93,12 @@ class SettingsScreen extends ConsumerWidget {
             // ── Security ─────────────────────────────────────────────
             _section(
               context,
-              title: 'Seguridad',
+              title: strings.security,
               children: [
                 _SettingsTile(
                   icon: PhosphorIconsRegular.lockKey,
-                  label: 'PIN de protección',
-                  subtitle: 'Requiere PIN para desactivar bloqueos',
+                  label: strings.pinProtection,
+                  subtitle: strings.pinProtectionSubtitle,
                   trailing: Switch(
                     value: settings.pinEnabled,
                     onChanged: (v) async {
@@ -116,12 +125,12 @@ class SettingsScreen extends ConsumerWidget {
             // ── Data ─────────────────────────────────────────────────
             _section(
               context,
-              title: 'Datos',
+              title: strings.data,
               children: [
                 _SettingsTile(
                   icon: PhosphorIconsRegular.trash,
-                  label: 'Restablecer todos los datos',
-                  subtitle: 'Borra configuración, límites y estadísticas',
+                  label: strings.resetAllData,
+                  subtitle: strings.resetAllDataSubtitle,
                   iconColor: AppColors.error,
                   onTap: () => _showResetConfirmDialog(context, ref, notifier),
                 ),
@@ -133,7 +142,7 @@ class SettingsScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(24),
               sliver: SliverToBoxAdapter(
                 child: Center(
-                  child: Text('SaFocus v1.0.0', style: AppTypography.caption),
+                  child: Text('${strings.appName} v1.0.0', style: AppTypography.caption),
                 ),
               ),
             ),
@@ -200,6 +209,7 @@ Future<void> _showPinSetupDialog(
   BuildContext context,
   SettingsNotifier notifier,
 ) async {
+  final strings = AppStrings.of(context);
   final pin = await showDialog<String>(
     context: context,
     barrierDismissible: false,
@@ -210,7 +220,7 @@ Future<void> _showPinSetupDialog(
     await notifier.togglePin(true, pin: pin);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('PIN configurado correctamente.')),
+        SnackBar(content: Text(strings.pinConfiguredSuccessfully)),
       );
     }
   }
@@ -236,15 +246,16 @@ class _PinSetupDialogState extends State<_PinSetupDialog> {
   }
 
   void _submit() {
+    final strings = AppStrings.of(context);
     final p1 = _pinController.text.trim();
     final p2 = _confirmController.text.trim();
 
     if (p1.length < 4) {
-      setState(() => _errorMsg = 'Mínimo 4 dígitos');
+      setState(() => _errorMsg = strings.minimum4Digits);
       return;
     }
     if (p1 != p2) {
-      setState(() => _errorMsg = 'Los PINs no coinciden');
+      setState(() => _errorMsg = strings.pinsDoNotMatch);
       return;
     }
 
@@ -264,7 +275,7 @@ class _PinSetupDialogState extends State<_PinSetupDialog> {
             size: 20,
           ),
           const SizedBox(width: 8),
-          Text('Crear PIN', style: AppTypography.headlineSmall),
+          Text(AppStrings.of(context).createPin, style: AppTypography.headlineSmall),
         ],
       ),
       content: Column(
@@ -288,7 +299,7 @@ class _PinSetupDialogState extends State<_PinSetupDialog> {
             maxLength: 6,
             obscureText: true,
             decoration: InputDecoration(
-              hintText: 'Confirmar PIN',
+              hintText: AppStrings.of(context).confirmPin,
               counterText: '',
               errorText: _errorMsg.isNotEmpty ? _errorMsg : null,
             ),
@@ -299,9 +310,9 @@ class _PinSetupDialogState extends State<_PinSetupDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(AppStrings.of(context).cancel),
         ),
-        ElevatedButton(onPressed: _submit, child: const Text('Guardar')),
+        ElevatedButton(onPressed: _submit, child: Text(AppStrings.of(context).save)),
       ],
     );
   }
@@ -312,20 +323,19 @@ void _showResetConfirmDialog(
   WidgetRef ref,
   SettingsNotifier notifier,
 ) {
+  final strings = AppStrings.of(context);
   showDialog(
     context: context,
     builder:
         (dialogCtx) => AlertDialog(
-          title: const Text('Restablecer datos'),
-          content: const Text(
-            'Esta acción eliminará todos los límites, bloqueos, estadísticas y configuración. No se puede deshacer.',
-          ),
+          title: Text(strings.resetDataTitle),
+          content: Text(strings.resetDataBody),
           actions: [
             TextButton(
               onPressed: () {
                 if (dialogCtx.mounted) Navigator.pop(dialogCtx);
               },
-              child: const Text('Cancelar'),
+              child: Text(strings.cancel),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
@@ -335,16 +345,14 @@ void _showResetConfirmDialog(
                   await notifier.resetAllData();
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Datos eliminados correctamente.'),
-                      ),
+                      SnackBar(content: Text(strings.deletedSuccessfully)),
                     );
                   }
                 } catch (_) {
                   // Ignore any error to prevent app crash
                 }
               },
-              child: const Text('Eliminar todo'),
+              child: Text(strings.deleteAll),
             ),
           ],
         ),
@@ -438,12 +446,12 @@ class _PermissionsSectionState extends ConsumerState<_PermissionsSection>
 
     return _buildSection(
       context,
-      title: 'Permisos de bloqueo',
+      title: AppStrings.of(context).permissionsBlocking,
       children: [
         _PermissionTile(
           icon: PhosphorIconsRegular.chartBar,
-          label: 'Estadísticas de uso',
-          subtitle: 'Necesario para detectar el tiempo en cada app',
+          label: AppStrings.of(context).usageStats,
+          subtitle: AppStrings.of(context).usageStatsSubtitle,
           granted: limitsState.hasUsagePermission,
           onActivate: () async {
             await notifier.openUsageSettings();
@@ -451,8 +459,8 @@ class _PermissionsSectionState extends ConsumerState<_PermissionsSection>
         ),
         _PermissionTile(
           icon: PhosphorIconsRegular.appWindow,
-          label: 'Superponer ventanas',
-          subtitle: 'Necesario para mostrar la pantalla de bloqueo',
+          label: AppStrings.of(context).overlayWindows,
+          subtitle: AppStrings.of(context).overlayWindowsSubtitle,
           granted: limitsState.hasOverlayPermission,
           onActivate: () async {
             await notifier.openOverlaySettings();
@@ -504,7 +512,7 @@ class _PermissionTile extends StatelessWidget {
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 child: Text(
-                  'Activar',
+                  AppStrings.of(context).activate,
                   style: AppTypography.labelSmall.copyWith(
                     color: AppColors.error,
                   ),

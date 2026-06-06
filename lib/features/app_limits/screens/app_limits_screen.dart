@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/localization/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/date_utils.dart';
@@ -18,6 +19,7 @@ class AppLimitsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(appLimitsProvider);
     final notifier = ref.read(appLimitsProvider.notifier);
+    final strings = AppStrings.of(context);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -31,9 +33,9 @@ class AppLimitsScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Límites de Apps', style: AppTypography.displayMedium),
+                    Text(strings.appLimitScreenTitle, style: AppTypography.displayMedium),
                     Text(
-                      'Controla cuánto tiempo usas cada aplicación',
+                      strings.appLimitScreenSubtitle,
                       style: AppTypography.bodyMedium.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -143,6 +145,7 @@ class _AppLimitCard extends StatelessWidget {
             : progress > 0.8
             ? AppColors.warning
             : AppColors.primary;
+    final strings = AppStrings.of(context);
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -213,7 +216,7 @@ class _AppLimitCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Eliminar',
+                                      strings.delete,
                               style: AppTypography.bodyMedium.copyWith(
                                 color: AppColors.error,
                               ),
@@ -232,12 +235,12 @@ class _AppLimitCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                formatMinutes(limit.usedMinutesToday) + ' usado',
+                      Text(
+                        '${formatMinutes(limit.usedMinutesToday)} ${strings.used}',
                 style: AppTypography.labelMedium,
               ),
               Text(
-                'Límite: ' + formatMinutes(limit.dailyLimitMinutes),
+                        '${strings.limitPrefix} ${formatMinutes(limit.dailyLimitMinutes)}',
                 style: AppTypography.labelMedium.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -269,11 +272,7 @@ class _AppLimitCard extends StatelessWidget {
                   final ok = await onEmergency();
                   if (!ok && context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Ya utilizaste la extensión de emergencia hoy.',
-                        ),
-                      ),
+                      SnackBar(content: Text(strings.emergencyExtensionAlreadyUsed)),
                     );
                   }
                 },
@@ -282,7 +281,7 @@ class _AppLimitCard extends StatelessWidget {
                   size: 16,
                 ),
                 label: Text(
-                  'Extensión de emergencia +${AppConstants.emergencyExtensionMinutes}min',
+                  strings.emergencyExtensionLabel(AppConstants.emergencyExtensionMinutes),
                 ),
               ),
             ),
@@ -301,6 +300,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -320,13 +320,10 @@ class _EmptyState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            Text(
-              'Sin límites configurados',
-              style: AppTypography.headlineMedium,
-            ),
+            Text(strings.noLimitsConfigured, style: AppTypography.headlineMedium),
             const SizedBox(height: 8),
             Text(
-              'Agrega aplicaciones y establece el tiempo máximo diario permitido.',
+              strings.addAppsToLimitSubtitle,
               style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -336,7 +333,7 @@ class _EmptyState extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onAdd,
               icon: const Icon(PhosphorIconsRegular.plus, size: 18),
-              label: const Text('Agregar aplicación'),
+              label: Text(strings.addApplication),
             ),
           ],
         ),
@@ -469,6 +466,7 @@ class _AddLimitSheetState extends State<_AddLimitSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return AnimatedSize(
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeOut,
@@ -484,6 +482,7 @@ class _AddLimitSheetState extends State<_AddLimitSheet> {
   // ── Step 1: Searchable app list ──────────────────────────────────────────
 
   Widget _buildPickerStep() {
+    final strings = AppStrings.of(context);
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.75,
       child: Column(
@@ -499,11 +498,11 @@ class _AddLimitSheetState extends State<_AddLimitSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Seleccionar app',
+                        strings.selectApp,
                         style: AppTypography.headlineMedium,
                       ),
                       Text(
-                        'Elige la app a la que quieres poner límite',
+                        strings.chooseAppToLimit,
                         style: AppTypography.bodySmall.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -528,7 +527,7 @@ class _AddLimitSheetState extends State<_AddLimitSheet> {
               controller: _searchCtrl,
               autofocus: true,
               decoration: InputDecoration(
-                hintText: 'Buscar app...',
+                hintText: strings.searchApp,
                 prefixIcon: const Icon(
                   PhosphorIconsRegular.magnifyingGlass,
                   size: 18,
@@ -573,7 +572,7 @@ class _AddLimitSheetState extends State<_AddLimitSheet> {
                     : _filtered.isEmpty
                     ? Center(
                       child: Text(
-                        'Sin resultados',
+                        strings.noResults,
                         style: AppTypography.bodyMedium.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -629,6 +628,7 @@ class _AddLimitSheetState extends State<_AddLimitSheet> {
 
   Widget _buildTimeStep() {
     final app = _selectedApp!;
+    final strings = AppStrings.of(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -648,7 +648,7 @@ class _AddLimitSheetState extends State<_AddLimitSheet> {
                 constraints: const BoxConstraints(),
               ),
               const SizedBox(width: 8),
-              Text('Límite de tiempo', style: AppTypography.headlineMedium),
+              Text(strings.timeLimit, style: AppTypography.headlineMedium),
             ],
           ),
           const SizedBox(height: 16),
@@ -700,7 +700,7 @@ class _AddLimitSheetState extends State<_AddLimitSheet> {
             ),
           ),
           const SizedBox(height: 24),
-          Text('Tiempo máximo diario', style: AppTypography.headlineSmall),
+          Text(strings.maximumDailyTime, style: AppTypography.headlineSmall),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
@@ -709,11 +709,10 @@ class _AddLimitSheetState extends State<_AddLimitSheet> {
                 _presets.map((p) {
                   final selected = p.value == _selectedMinutes;
                   return ChoiceChip(
-                    label: Text(p.label),
+                    label: Text(strings.presetLabel(p.value)),
                     selected: selected,
                     selectedColor: AppColors.primary.withValues(alpha: 0.25),
-                    onSelected:
-                        (_) => setState(() => _selectedMinutes = p.value),
+                    onSelected: (_) => setState(() => _selectedMinutes = p.value),
                     labelStyle: AppTypography.labelMedium.copyWith(
                       color:
                           selected ? AppColors.primary : AppColors.textPrimary,
@@ -733,7 +732,7 @@ class _AddLimitSheetState extends State<_AddLimitSheet> {
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                      : const Text('Guardar límite'),
+                      : Text(strings.saveLimit),
             ),
           ),
           const SizedBox(height: 8),

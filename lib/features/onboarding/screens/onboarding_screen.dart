@@ -6,6 +6,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/localization/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../features/auth/services/auth_service.dart';
@@ -23,54 +24,53 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _controller = PageController();
   int _page = 0;
 
-  static const _slides = [
-    _Slide(
-      icon: PhosphorIconsFill.shieldCheck,
-      title: 'Bloquea las distracciones',
-      body:
-          'Activa el escudo VPN y nunca más accederás a sitios que te alejan de tus metas. Silencio digital, atención plena.',
-      accent: AppColors.primary,
-    ),
-    _Slide(
-      icon: PhosphorIconsFill.clockCountdown,
-      title: 'Controla el tiempo en apps',
-      body:
-          'Establece límites diarios en Instagram, TikTok y cualquier app que consuma tu tiempo. Recupera el control de tu jornada.',
-      accent: AppColors.secondary,
-    ),
-    _Slide(
-      icon: PhosphorIconsFill.lightning,
-      title: 'Construye el hábito del enfoque',
-      body:
-          'Recordatorios motivacionales, racha de días y un puntaje de enfoque diario te mantienen en el camino correcto.',
-      accent: AppColors.warning,
-    ),
-    _Slide(
-      icon: PhosphorIconsFill.lock,
-      title: 'Protégete con un PIN',
-      body:
-          'Configura un PIN de seguridad para proteger tus límites y ajustes. Solo acciones destructivas lo require. Es recomendado.',
-      accent: AppColors.primary,
-      isPinSlide: true,
-    ),
-    _Slide(
-      icon: PhosphorIconsFill.prohibit,
-      title: 'Bloqueo real de apps',
-      body:
-          'Para bloquear apps al alcanzar el límite, SaFocus necesita permiso de "Uso de apps" y "Superponer ventanas". Solo tardas 30 segundos en activarlos.',
-      accent: AppColors.error,
-    ),
-  ];
+  List<_Slide> _slides(BuildContext context) {
+    final strings = AppStrings.of(context);
+    return [
+      _Slide(
+        icon: PhosphorIconsFill.shieldCheck,
+        title: strings.onboardingSlide1Title,
+        body: strings.onboardingSlide1Body,
+        accent: AppColors.primary,
+      ),
+      _Slide(
+        icon: PhosphorIconsFill.clockCountdown,
+        title: strings.onboardingSlide2Title,
+        body: strings.onboardingSlide2Body,
+        accent: AppColors.secondary,
+      ),
+      _Slide(
+        icon: PhosphorIconsFill.lightning,
+        title: strings.onboardingSlide3Title,
+        body: strings.onboardingSlide3Body,
+        accent: AppColors.warning,
+      ),
+      _Slide(
+        icon: PhosphorIconsFill.lock,
+        title: strings.onboardingSlide4Title,
+        body: strings.onboardingSlide4Body,
+        accent: AppColors.primary,
+        isPinSlide: true,
+      ),
+      _Slide(
+        icon: PhosphorIconsFill.prohibit,
+        title: strings.onboardingSlide5Title,
+        body: strings.onboardingSlide5Body,
+        accent: AppColors.error,
+      ),
+    ];
+  }
 
   Future<void> _openPinSetup() async {
     if (!mounted) return;
+    final slides = _slides(context);
     final result = await showDialog<String>(
       context: context,
       builder: (_) => const _PinSetupDialog(),
     );
 
     // If PIN was created, move to next slide
-    if (result != null && mounted && _page == _slides.length - 2) {
+    if (result != null && mounted && _page == slides.length - 2) {
       // Ensure SettingsProvider reflects the new PIN state so the toggle
       // in SettingsScreen appears enabled immediately.
       try {
@@ -97,7 +97,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _next() {
-    if (_page < _slides.length - 1) {
+    final slides = _slides(context);
+    if (_page < slides.length - 1) {
       _controller.nextPage(
         duration: const Duration(milliseconds: 350),
         curve: Curves.easeInOut,
@@ -120,11 +121,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ).invokeMethod('openUsageSettings');
     } catch (_) {
       if (mounted) {
+        final strings = AppStrings.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Ve a Ajustes → Privacidad → Estadísticas de uso y activa SaFocus.',
-            ),
+          SnackBar(
+            content: Text(strings.onboardingUsagePermissionFallback),
             duration: Duration(seconds: 5),
           ),
         );
@@ -139,11 +139,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ).invokeMethod('openOverlaySettings');
     } catch (_) {
       if (mounted) {
+        final strings = AppStrings.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Ve a Ajustes → Permisos especiales → Superponer ventanas y activa SaFocus.',
-            ),
+          SnackBar(
+            content: Text(strings.onboardingOverlayPermissionFallback),
             duration: Duration(seconds: 5),
           ),
         );
@@ -159,6 +158,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
+    final slides = _slides(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       resizeToAvoidBottomInset: false,
@@ -182,7 +183,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   TextButton(
                     onPressed: _finish,
                     child: Text(
-                      'Omitir',
+                      strings.onboardingSkip,
                       style: AppTypography.labelLarge.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -197,8 +198,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: PageView.builder(
                 controller: _controller,
                 onPageChanged: (i) => setState(() => _page = i),
-                itemCount: _slides.length,
-                itemBuilder: (_, i) => _SlidePage(slide: _slides[i]),
+                itemCount: slides.length,
+                itemBuilder: (_, i) => _SlidePage(slide: slides[i]),
               ),
             ),
 
@@ -210,7 +211,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   // Indicator dots
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(_slides.length, (i) {
+                    children: List.generate(slides.length, (i) {
                       final active = i == _page;
                       return AnimatedContainer(
                         duration: const Duration(milliseconds: 250),
@@ -220,7 +221,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         decoration: BoxDecoration(
                           color:
                               active
-                                  ? _slides[_page].accent
+                                  ? slides[_page].accent
                                   : AppColors.surfaceVariant,
                           borderRadius: BorderRadius.circular(4),
                         ),
@@ -229,20 +230,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                   const SizedBox(height: 32),
                   // PIN setup buttons (custom UI for PIN slide)
-                  if (_slides[_page].isPinSlide) ...[
+                  if (slides[_page].isPinSlide) ...[
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: _openPinSetup,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: _slides[_page].accent,
+                          backgroundColor: slides[_page].accent,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
                         child: Text(
-                          'Crear PIN',
+                          strings.onboardingCreatePin,
                           style: AppTypography.labelLarge,
                         ),
                       ),
@@ -253,16 +254,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       child: OutlinedButton(
                         onPressed: _next,
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: _slides[_page].accent),
+                          side: BorderSide(color: slides[_page].accent),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
                         child: Text(
-                          'Hacerlo después',
+                          strings.onboardingPinLater,
                           style: AppTypography.labelLarge.copyWith(
-                            color: _slides[_page].accent,
+                            color: slides[_page].accent,
                           ),
                         ),
                       ),
@@ -273,20 +274,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       child: ElevatedButton(
                         onPressed: _next,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: _slides[_page].accent,
+                          backgroundColor: slides[_page].accent,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
                         child: Text(
-                          _page == _slides.length - 1 ? 'Empezar' : 'Siguiente',
+                          _page == slides.length - 1 ? strings.start : strings.next,
                           style: AppTypography.labelLarge,
                         ),
                       ),
                     ),
                   // On the last slide, show permission buttons.
-                  if (_page == _slides.length - 1) ...[
+                  if (_page == slides.length - 1) ...[
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
@@ -300,7 +301,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         ),
                         child: Text(
-                          'Activar: Estadísticas de uso',
+                          strings.onboardingUsageStatsButton,
                           style: AppTypography.labelLarge.copyWith(
                             color: AppColors.error,
                           ),
@@ -320,7 +321,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         ),
                         child: Text(
-                          'Activar: Superponer ventanas',
+                          strings.onboardingOverlayButton,
                           style: AppTypography.labelLarge.copyWith(
                             color: AppColors.error,
                           ),
@@ -418,11 +419,11 @@ class _PinSetupDialogState extends State<_PinSetupDialog> {
     final p2 = _confirmController.text.trim();
 
     if (p1.length < 4) {
-      setState(() => _errorMsg = 'Mínimo 4 dígitos');
+      setState(() => _errorMsg = AppStrings.of(context).minimum4Digits);
       return;
     }
     if (p1 != p2) {
-      setState(() => _errorMsg = 'Los PINs no coinciden');
+      setState(() => _errorMsg = AppStrings.of(context).pinsDoNotMatch);
       return;
     }
 
@@ -433,7 +434,7 @@ class _PinSetupDialogState extends State<_PinSetupDialog> {
         Navigator.pop(context, p1);
       }
     } catch (e) {
-      setState(() => _errorMsg = 'Error al guardar el PIN');
+      setState(() => _errorMsg = AppStrings.of(context).isEnglish ? 'Error saving PIN' : 'Error al guardar el PIN');
     }
   }
 
@@ -454,7 +455,7 @@ class _PinSetupDialogState extends State<_PinSetupDialog> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text('Crear PIN', style: AppTypography.headlineSmall),
+            child: Text(AppStrings.of(context).onboardingCreatePin, style: AppTypography.headlineSmall),
           ),
         ],
       ),
@@ -480,7 +481,7 @@ class _PinSetupDialogState extends State<_PinSetupDialog> {
               maxLength: 6,
               obscureText: true,
               decoration: InputDecoration(
-                hintText: 'Confirmar PIN',
+                hintText: AppStrings.of(context).confirmPin,
                 counterText: '',
                 errorText: _errorMsg.isNotEmpty ? _errorMsg : null,
               ),
@@ -492,9 +493,9 @@ class _PinSetupDialogState extends State<_PinSetupDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(AppStrings.of(context).cancel),
         ),
-        ElevatedButton(onPressed: _submit, child: const Text('Guardar')),
+        ElevatedButton(onPressed: _submit, child: Text(AppStrings.of(context).save)),
       ],
     );
   }

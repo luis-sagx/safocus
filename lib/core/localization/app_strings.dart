@@ -1,0 +1,376 @@
+import 'package:flutter/widgets.dart';
+
+class AppStrings {
+  const AppStrings._(this.languageCode);
+
+  final String languageCode;
+
+  bool get isEnglish => languageCode.toLowerCase().startsWith('en');
+
+  static AppStrings of(BuildContext context) {
+    return AppStrings._(Localizations.localeOf(context).languageCode);
+  }
+
+  static AppStrings forLanguage(String languageCode) {
+    return AppStrings._(languageCode);
+  }
+
+  String get appName => 'SaFocus';
+
+  String get today => isEnglish ? 'Today' : 'Hoy';
+  String get yesterday => isEnglish ? 'Yesterday' : 'Ayer';
+  String get settings => isEnglish ? 'Settings' : 'Configuración';
+  String get appearance => isEnglish ? 'Appearance' : 'Apariencia';
+  String get security => isEnglish ? 'Security' : 'Seguridad';
+  String get data => isEnglish ? 'Data' : 'Datos';
+  String get theme => isEnglish ? 'Theme' : 'Tema';
+  String get language => isEnglish ? 'Language' : 'Idioma';
+  String get darkTheme => isEnglish ? 'Dark' : 'Oscuro';
+  String get spanish => isEnglish ? 'Spanish' : 'Español';
+  String get english => isEnglish ? 'English' : 'Inglés';
+  String get pinProtection =>
+      isEnglish ? 'Protection PIN' : 'PIN de protección';
+  String get pinProtectionSubtitle =>
+      isEnglish
+          ? 'Requires a PIN to disable blocks'
+          : 'Requiere PIN para desactivar bloqueos';
+  String get resetAllData =>
+      isEnglish ? 'Reset all data' : 'Restablecer todos los datos';
+  String get resetAllDataSubtitle =>
+      isEnglish
+          ? 'Deletes settings, limits, and statistics'
+          : 'Borra configuración, límites y estadísticas';
+  String get resetDataTitle => isEnglish ? 'Reset data' : 'Restablecer datos';
+  String get resetDataBody =>
+      isEnglish
+          ? 'This will delete all limits, blocks, statistics, and settings. It cannot be undone.'
+          : 'Esta acción eliminará todos los límites, bloqueos, estadísticas y configuración. No se puede deshacer.';
+  String get cancel => isEnglish ? 'Cancel' : 'Cancelar';
+  String get deleteAll => isEnglish ? 'Delete all' : 'Eliminar todo';
+  String get deletedSuccessfully =>
+      isEnglish
+          ? 'Data deleted successfully.'
+          : 'Datos eliminados correctamente.';
+  String get pinConfiguredSuccessfully =>
+      isEnglish
+          ? 'PIN configured successfully.'
+          : 'PIN configurado correctamente.';
+  String get minimum4Digits =>
+      isEnglish ? 'Minimum 4 digits' : 'Mínimo 4 dígitos';
+  String get pinsDoNotMatch =>
+      isEnglish ? 'PINs do not match' : 'Los PINs no coinciden';
+  String get createPin => isEnglish ? 'Create PIN' : 'Crear PIN';
+  String get newPinHint =>
+      isEnglish ? 'New PIN (4–6 digits)' : 'Nuevo PIN (4–6 dígitos)';
+  String get confirmPin => isEnglish ? 'Confirm PIN' : 'Confirmar PIN';
+  String get save => isEnglish ? 'Save' : 'Guardar';
+  String get create => isEnglish ? 'Create' : 'Crear';
+  String get setupLater => isEnglish ? 'Do it later' : 'Hacerlo después';
+  String get skip => isEnglish ? 'Skip' : 'Omitir';
+  String get next => isEnglish ? 'Next' : 'Siguiente';
+  String get start => isEnglish ? 'Start' : 'Empezar';
+
+  String get permissionsBlocking =>
+      isEnglish ? 'Blocking permissions' : 'Permisos de bloqueo';
+  String get usageStats =>
+      isEnglish ? 'Usage statistics' : 'Estadísticas de uso';
+  String get usageStatsSubtitle =>
+      isEnglish
+          ? 'Required to detect time spent in each app'
+          : 'Necesario para detectar el tiempo en cada app';
+  String get overlayWindows =>
+      isEnglish ? 'Overlay windows' : 'Superponer ventanas';
+  String get overlayWindowsSubtitle =>
+      isEnglish
+          ? 'Required to show the blocking screen'
+          : 'Necesario para mostrar la pantalla de bloqueo';
+  String get activate => isEnglish ? 'Activate' : 'Activar';
+
+  String get home => isEnglish ? 'Home' : 'Inicio';
+  String get blocking => isEnglish ? 'Blocking' : 'Bloqueo';
+  String get statistics => isEnglish ? 'Statistics' : 'Estadísticas';
+  String get limits => isEnglish ? 'Limits' : 'Límites';
+
+  String get focusScore => isEnglish ? 'Focus score' : 'Puntaje de Enfoque';
+  String get basedOnActiveBlocks =>
+      isEnglish
+          ? 'Based on your active limits and blocks today'
+          : 'Basado en tus límites y bloqueos activos hoy';
+  String get webBlocking => isEnglish ? 'Web blocking' : 'Bloqueo Web';
+  String get active => isEnglish ? 'Active' : 'Activo';
+  String get inactive => isEnglish ? 'Inactive' : 'Inactivo';
+  String get blockedToday => isEnglish ? 'Today' : 'Hoy';
+  String get appUsageLimits => isEnglish ? 'Usage limits' : 'Límites de uso';
+  String get seeAll => isEnglish ? 'See all' : 'Ver todos';
+  String get noLimitsConfigured =>
+      isEnglish ? 'No limits configured' : 'Sin límites configurados';
+  String get addAppsToLimitSubtitle =>
+      isEnglish
+          ? 'Add daily limits to your distracting apps'
+          : 'Agrega límites diarios a tus apps distractoras';
+  String get addUsageLimitsSubtitle =>
+      isEnglish
+          ? 'Add daily limits to your distracting apps'
+          : 'Agrega límites diarios a tus apps distractoras';
+  String get addLimit => isEnglish ? 'Add limit' : 'Agregar límite';
+  String get addApplication => isEnglish ? 'Add app' : 'Agregar aplicación';
+  String get blockingNotActiveTitle =>
+      isEnglish
+          ? 'App blocking is not active'
+          : 'El bloqueo de apps no está activo';
+  String get missingPermissionsBanner =>
+      isEnglish
+          ? 'Missing permissions so SaFocus can block apps when the daily limit is exceeded.'
+          : 'Faltan permisos para que SaFocus bloquee apps al superar el límite diario.';
+  String get appLimitScreenTitle =>
+      isEnglish ? 'App limits' : 'Límites de Apps';
+  String get appLimitScreenSubtitle =>
+      isEnglish
+          ? 'Control how much time you spend in each app'
+          : 'Controla cuánto tiempo usas cada aplicación';
+  String get delete => isEnglish ? 'Delete' : 'Eliminar';
+  String get used => isEnglish ? 'used' : 'usado';
+  String get limitPrefix => isEnglish ? 'Limit:' : 'Límite:';
+  String get emergencyExtensionAlreadyUsed =>
+      isEnglish
+          ? 'You already used today’s emergency extension.'
+          : 'Ya utilizaste la extensión de emergencia hoy.';
+  String emergencyExtensionLabel(int minutes) =>
+      isEnglish
+          ? 'Emergency extension +${minutes}min'
+          : 'Extensión de emergencia +${minutes}min';
+  String get limitExceeded => isEnglish ? 'Limit exceeded' : 'Límite superado';
+  String remainingMinutes(String formatted) =>
+      isEnglish ? '$formatted left' : '$formatted restantes';
+
+  String get selectApp => isEnglish ? 'Select app' : 'Seleccionar app';
+  String get chooseAppToLimit =>
+      isEnglish
+          ? 'Choose the app you want to limit'
+          : 'Elige la app a la que quieres poner límite';
+  String get searchApp => isEnglish ? 'Search app...' : 'Buscar app...';
+  String get noResults => isEnglish ? 'No results' : 'Sin resultados';
+  String get timeLimit => isEnglish ? 'Time limit' : 'Límite de tiempo';
+  String get maximumDailyTime =>
+      isEnglish ? 'Maximum daily time' : 'Tiempo máximo diario';
+  String get saveLimit => isEnglish ? 'Save limit' : 'Guardar límite';
+  String failedToLoadApps(String error) =>
+      isEnglish
+          ? 'Could not load apps: $error'
+          : 'No se pudieron cargar las apps: $error';
+
+  String get blockWebDescription =>
+      isEnglish
+          ? 'Turn on the VPN shield to block distracting sites'
+          : 'Activa el escudo VPN para bloquear sitios distractores';
+  String get vpnCouldNotActivate =>
+      isEnglish
+          ? 'Could not activate VPN. Check permissions.'
+          : 'No se pudo activar el VPN. Verifica los permisos.';
+  String get mySites => isEnglish ? 'My sites' : 'Mis sitios';
+  String get predefined => isEnglish ? 'Predefined' : 'Predefinidos';
+  String get shieldActive => isEnglish ? 'Shield active' : 'Escudo Activo';
+  String get shieldInactive =>
+      isEnglish ? 'Shield inactive' : 'Escudo Inactivo';
+  String customSitesCount(int count) =>
+      isEnglish ? '$count blocked sites' : '$count sitios bloqueados';
+  String get tapToEnableVpn =>
+      isEnglish
+          ? 'Tap to enable VPN blocking'
+          : 'Toca para activar el bloqueo VPN';
+  String get noCustomSites =>
+      isEnglish ? 'No custom sites' : 'Sin sitios personalizados';
+  String get addUrlsToBlock =>
+      isEnglish ? 'Add URLs to block' : 'Agrega URLs que quieres bloquear';
+  String get addSite => isEnglish ? 'Add site' : 'Agregar sitio';
+  String get enterDomainWithoutHttps =>
+      isEnglish
+          ? 'Enter the domain without "https://" (e.g. facebook.com)'
+          : 'Introduce el dominio sin "https://" (ej. facebook.com)';
+  String get domainPlaceholder => isEnglish ? 'domain.com' : 'dominio.com';
+  String get noBlockedAttemptsYet =>
+      isEnglish
+          ? 'No blocked attempts recorded yet.'
+          : 'Todavía no hay intentos bloqueados registrados.';
+  String get customSiteBlocking =>
+      isEnglish ? 'Custom site blocking' : 'Bloqueo de sitios personalizados';
+  String get defaultSiteBlocking =>
+      isEnglish ? 'Default site blocking' : 'Bloqueo de sitios predefinidos';
+  String categoryLabel(String key) {
+    switch (key) {
+      case 'Redes sociales':
+        return isEnglish ? 'Social networks' : 'Redes sociales';
+      case 'Adulto':
+        return isEnglish ? 'Adult' : 'Adulto';
+      case 'Video / streaming':
+        return isEnglish ? 'Video / streaming' : 'Video / streaming';
+      case 'Apuestas / juegos':
+        return isEnglish ? 'Betting / games' : 'Apuestas / juegos';
+      case 'Noticias / clickbait':
+        return isEnglish ? 'News / clickbait' : 'Noticias / clickbait';
+      default:
+        return key;
+    }
+  }
+
+  String get motivation => isEnglish ? 'Motivation' : 'Motivación';
+  String get phrasesReminder =>
+      isEnglish
+          ? 'Phrases that remind you why you started'
+          : 'Frases que te recuerdan por qué empezaste';
+  String get activeReminders =>
+      isEnglish ? 'Active reminders' : 'Recordatorios activos';
+  String get receiveMotivationalPhrases =>
+      isEnglish
+          ? 'Receive motivational phrases'
+          : 'Recibe frases motivacionales';
+  String get frequency => isEnglish ? 'Frequency' : 'Frecuencia';
+  String everyHours(int hours) =>
+      isEnglish ? 'Every ${hours}h' : 'Cada ${hours}h';
+  String phrasesCount(int count) =>
+      isEnglish ? 'Phrases ($count)' : 'Frases ($count)';
+  String get addPhrase => isEnglish ? 'Add' : 'Agregar';
+  String get newPhrase => isEnglish ? 'New phrase' : 'Nueva frase';
+  String get writeInspiringPhrase =>
+      isEnglish
+          ? 'Write a phrase that inspires you...'
+          : 'Escribe una frase que te inspire...';
+  String get languageLabel => isEnglish ? 'Language:' : 'Idioma:';
+  String get savePhrase => isEnglish ? 'Save phrase' : 'Guardar frase';
+
+  String get statisticsTitle => isEnglish ? 'Statistics' : 'Estadísticas';
+  String get last7Days => isEnglish ? 'Last 7 days' : 'Últimos 7 días';
+  String get todayScore => isEnglish ? 'Today’s score' : 'Puntaje hoy';
+  String get streak => isEnglish ? 'Streak' : 'Racha';
+  String dayWord(int days) =>
+      isEnglish ? (days == 1 ? 'day' : 'days') : (days == 1 ? 'día' : 'días');
+  String get dailyUsageMinutes =>
+      isEnglish ? 'Daily usage minutes' : 'Minutos de uso diario';
+  String get noUsageHistory =>
+      isEnglish
+          ? 'There is not enough history yet to show the chart. The app needs a few days of usage.'
+          : 'Aún no hay historial suficiente para mostrar la gráfica. La app necesita registrar algunos días de uso.';
+  String get enableUsageStatsPermission =>
+      isEnglish
+          ? 'Enable the “Usage statistics” permission to record daily minutes and fill this chart.'
+          : 'Activa el permiso de “Uso de apps” para registrar minutos diarios y llenar esta gráfica.';
+  String get goToSettings => isEnglish ? 'Go to settings' : 'Ir a ajustes';
+  String get usageByApp => isEnglish ? 'Usage by app' : 'Uso por app';
+  String get blockedAttempts =>
+      isEnglish ? 'Blocked attempts' : 'Intentos bloqueados';
+  String get detail => isEnglish ? 'Details' : 'Detalle';
+  String get clear => isEnglish ? 'Clear' : 'Limpiar';
+  String get blockedHistoryDeleted =>
+      isEnglish
+          ? 'Blocked history deleted.'
+          : 'Historial de bloqueos eliminado.';
+  String get week => isEnglish ? 'Week' : 'Semana';
+  String get unique => isEnglish ? 'Unique' : 'Únicos';
+  String get activeSites => isEnglish ? 'Active sites' : 'Sitios activos';
+  String get mostBlockedDomains =>
+      isEnglish ? 'Most blocked domains' : 'Dominios más bloqueados';
+  String get moreAttempts => isEnglish ? 'times' : 'veces';
+  String origin(String sample) =>
+      isEnglish ? 'Source: $sample' : 'Origen: $sample';
+  String get blockedDetailsTitle =>
+      isEnglish ? 'Blocked attempts details' : 'Detalle de bloqueos';
+  String get blockedDetailsSubtitle =>
+      isEnglish
+          ? 'This screen separates blocked attempts from configured sites.'
+          : 'Esta pantalla separa los intentos bloqueados de los sitios configurados.';
+  String get noBlockedAttemptsRecorded =>
+      isEnglish
+          ? 'No blocked attempts have been recorded yet.'
+          : 'Todavía no hay intentos bloqueados registrados.';
+  String get noUsageData =>
+      isEnglish
+          ? 'No usage data recorded yet.'
+          : 'Sin datos de uso registrados aún.';
+
+  String get authTitle => isEnglish ? 'Enter your PIN' : 'Ingresa tu PIN';
+  String get authSubtitle =>
+      isEnglish ? 'Protect your settings' : 'Protege tus configuraciones';
+  String get confirmPinButton => isEnglish ? 'Confirm' : 'Confirmar';
+  String get useBiometrics => isEnglish ? 'Use biometrics' : 'Usar biometría';
+  String incorrectPin(int remaining) =>
+      isEnglish
+          ? 'Incorrect PIN. $remaining attempt${remaining == 1 ? '' : 's'} remaining.'
+          : 'PIN incorrecto. $remaining intento${remaining == 1 ? '' : 's'} restante${remaining == 1 ? '' : 's'}.';
+  String get tooManyAttempts =>
+      isEnglish
+          ? 'Too many attempts. Wait 1 minute.'
+          : 'Demasiados intentos. Espera 1 minuto.';
+  String lockedOutIn(int seconds) =>
+      isEnglish
+          ? 'Locked out. Try again in ${seconds}s.'
+          : 'Bloqueado. Intenta de nuevo en ${seconds}s.';
+
+  String get onboardingSkip => isEnglish ? 'Skip' : 'Omitir';
+  String get onboardingPinLater =>
+      isEnglish ? 'Do it later' : 'Hacerlo después';
+  String get onboardingUsageStatsButton =>
+      isEnglish ? 'Enable: Usage statistics' : 'Activar: Estadísticas de uso';
+  String get onboardingOverlayButton =>
+      isEnglish ? 'Enable: Overlay windows' : 'Activar: Superponer ventanas';
+  String get onboardingCreatePin => isEnglish ? 'Create PIN' : 'Crear PIN';
+  String get onboardingSlide1Title =>
+      isEnglish ? 'Block distractions' : 'Bloquea las distracciones';
+  String get onboardingSlide1Body =>
+      isEnglish
+          ? 'Turn on the VPN shield and you will no longer access sites that pull you away from your goals. Digital silence, full attention.'
+          : 'Activa el escudo VPN y nunca más accederás a sitios que te alejan de tus metas. Silencio digital, atención plena.';
+  String get onboardingSlide2Title =>
+      isEnglish ? 'Control app time' : 'Controla el tiempo en apps';
+  String get onboardingSlide2Body =>
+      isEnglish
+          ? 'Set daily limits for Instagram, TikTok, and any app that consumes your time. Regain control of your day.'
+          : 'Establece límites diarios en Instagram, TikTok y cualquier app que consuma tu tiempo. Recupera el control de tu jornada.';
+  String get onboardingSlide3Title =>
+      isEnglish ? 'Build the focus habit' : 'Construye el hábito del enfoque';
+  String get onboardingSlide3Body =>
+      isEnglish
+          ? 'Motivational reminders, streaks, and a daily focus score keep you on the right path.'
+          : 'Recordatorios motivacionales, racha de días y un puntaje de enfoque diario te mantienen en el camino correcto.';
+  String get onboardingSlide4Title =>
+      isEnglish ? 'Protect yourself with a PIN' : 'Protégete con un PIN';
+  String get onboardingSlide4Body =>
+      isEnglish
+          ? 'Set a security PIN to protect your limits and settings. Only destructive actions will require it. Recommended.'
+          : 'Configura un PIN de seguridad para proteger tus límites y ajustes. Solo acciones destructivas lo requieren. Es recomendado.';
+  String get onboardingSlide5Title =>
+      isEnglish ? 'Real app blocking' : 'Bloqueo real de apps';
+  String get onboardingSlide5Body =>
+      isEnglish
+          ? 'To block apps when they reach their limit, SaFocus needs “Usage statistics” and “Overlay windows” permissions. It only takes 30 seconds to enable them.'
+          : 'Para bloquear apps al alcanzar el límite, SaFocus necesita permiso de "Uso de apps" y "Superponer ventanas". Solo tardas 30 segundos en activarlos.';
+  String get onboardingUsagePermissionFallback =>
+      isEnglish
+          ? 'Go to Settings → Privacy → Usage statistics and enable SaFocus.'
+          : 'Ve a Ajustes → Privacidad → Estadísticas de uso y activa SaFocus.';
+  String get onboardingOverlayPermissionFallback =>
+      isEnglish
+          ? 'Go to Settings → Special permissions → Overlay windows and enable SaFocus.'
+          : 'Ve a Ajustes → Permisos especiales → Superponer ventanas y activa SaFocus.';
+
+  String get settingsLanguageHint =>
+      isEnglish ? 'Choose language' : 'Elige idioma';
+  String get themeDarkLabel => darkTheme;
+
+  String presetLabel(int minutes) {
+    switch (minutes) {
+      case 15:
+        return isEnglish ? '15 min' : '15 min';
+      case 30:
+        return isEnglish ? '30 min' : '30 min';
+      case 60:
+        return isEnglish ? '1 hour' : '1 hora';
+      case 120:
+        return isEnglish ? '2 hours' : '2 horas';
+      default:
+        return isEnglish ? '$minutes min' : '$minutes min';
+    }
+  }
+
+  String countLabel(int value, {String unit = ''}) =>
+      unit.isEmpty ? '$value' : '$value $unit';
+}

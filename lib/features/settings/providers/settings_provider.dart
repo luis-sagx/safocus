@@ -58,9 +58,12 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
       (e) => e.name == themeStr,
       orElse: () => AppThemeMode.dark,
     );
+    final storedLanguage = s.getString(AppConstants.keyLanguage);
+    final systemLanguage = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+    final language = storedLanguage ?? (systemLanguage == 'en' ? 'en' : 'es');
     state = SettingsState(
       themeMode: theme,
-      language: s.getString(AppConstants.keyLanguage) ?? 'es',
+      language: language,
       pinEnabled: s.getBool(AppConstants.keyPinEnabled),
       biometricEnabled: s.getBool(AppConstants.keyBiometricEnabled),
       quietStartHour: s.getInt(AppConstants.keyQuietStart, defaultValue: 22),
@@ -74,6 +77,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
   }
 
   Future<void> setLanguage(String lang) async {
+    if (lang != 'es' && lang != 'en') return;
     await LocalStorage.instance.setString(AppConstants.keyLanguage, lang);
     state = state.copyWith(language: lang);
   }

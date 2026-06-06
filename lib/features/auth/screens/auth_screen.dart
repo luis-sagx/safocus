@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import '../../../core/localization/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../services/auth_service.dart';
@@ -94,16 +95,16 @@ class _AuthScreenState extends State<AuthScreen> {
     if (ok) {
       await widget.onAuthenticated();
     } else {
+      final strings = AppStrings.of(context);
       setState(() {
         _pin = '';
         _loading = false;
         if (_auth.isLockedOut) {
-          _error = 'Demasiados intentos. Espera 1 minuto.';
+          _error = strings.tooManyAttempts;
           _startLockoutTimer();
         } else {
           final remaining = AuthService.maxAttempts - _auth.failedAttempts;
-          _error =
-              'PIN incorrecto. $remaining intento${remaining == 1 ? '' : 's'} restante${remaining == 1 ? '' : 's'}.';
+          _error = strings.incorrectPin(remaining);
         }
       });
     }
@@ -117,9 +118,10 @@ class _AuthScreenState extends State<AuthScreen> {
         if (mounted) setState(() => _error = '');
       } else {
         if (mounted) {
+          final strings = AppStrings.of(context);
           final secs = _auth.remainingLockout.inSeconds;
           setState(() {
-            _error = 'Bloqueado. Intenta de nuevo en ${secs}s.';
+            _error = strings.lockedOutIn(secs);
           });
         }
       }
@@ -128,6 +130,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -148,10 +151,10 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            Text('Ingresa tu PIN', style: AppTypography.headlineLarge),
+            Text(strings.authTitle, style: AppTypography.headlineLarge),
             const SizedBox(height: 8),
             Text(
-              'Protege tus configuraciones',
+              strings.authSubtitle,
               style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -230,9 +233,9 @@ class _AuthScreenState extends State<AuthScreen> {
                               color: Colors.white,
                             ),
                           )
-                          : const Text(
-                            'Confirmar',
-                            style: TextStyle(
+                          : Text(
+                            strings.confirmPinButton,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -253,7 +256,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   color: AppColors.primary,
                 ),
                 label: Text(
-                  'Usar biometría',
+                  strings.useBiometrics,
                   style: AppTypography.labelLarge.copyWith(
                     color: AppColors.primary,
                   ),
