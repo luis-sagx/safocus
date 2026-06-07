@@ -136,6 +136,14 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
               overflow: TextOverflow.ellipsis)),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(PhosphorIconsRegular.arrowsClockwise,
+              color: AppColors.textSecondary, size: 20),
+            tooltip: strings.refresh,
+            onPressed: () => limitsNotifier.refresh(),
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 100),
@@ -532,14 +540,27 @@ class _AppPickerSheetState extends State<_AppPickerSheet> {
           // Content
           Expanded(
             child: _loading
-                ? const Center(
+                ? Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        CircularProgressIndicator(color: AppColors.primary),
-                        SizedBox(height: 16),
-                        Text('Loading apps…',
-                          style: TextStyle(color: AppColors.textSecondary)),
+                        const SizedBox(
+                          width: 48, height: 48,
+                          child: CircularProgressIndicator(
+                            color: AppColors.primary, strokeWidth: 3),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          AppStrings.of(context).loadingApps,
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: AppColors.textSecondary),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          AppStrings.of(context).loadingAppsSubtitle,
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textDisabled),
+                        ),
                       ],
                     ),
                   )

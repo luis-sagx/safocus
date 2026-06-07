@@ -460,6 +460,14 @@ class AppStrings {
           : 'Selecciona apps para esta categoría';
   String get addAppToCategory =>
       isEnglish ? 'Add app' : 'Agregar app';
+  String get refresh =>
+      isEnglish ? 'Refresh' : 'Refrescar';
+  String get loadingApps =>
+      isEnglish ? 'Loading apps…' : 'Cargando aplicaciones…';
+  String get loadingAppsSubtitle =>
+      isEnglish
+          ? 'Extracting icons, this may take a moment'
+          : 'Extrayendo íconos, puede tardar un momento';
   String get noCategoriesYet =>
       isEnglish ? 'No categories yet' : 'Todavía no hay categorías';
   String get addCategorySubtitle =>

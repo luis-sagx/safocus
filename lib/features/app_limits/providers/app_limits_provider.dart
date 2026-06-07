@@ -308,6 +308,9 @@ class AppLimitsNotifier extends StateNotifier<AppLimitsState> {
     );
     await LocalStorage.instance.upsertAppLimit(limit);
     _load();
+    // Immediately sync with native and refresh usage so the UI updates.
+    await _refreshUsageStats();
+    await _syncBlockStateToNative(state.limits);
   }
 
   Future<void> updateLimit(AppLimit limit) async {
