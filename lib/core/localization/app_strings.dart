@@ -196,6 +196,19 @@ class AppStrings {
       isEnglish ? 'Custom site blocking' : 'Bloqueo de sitios personalizados';
   String get defaultSiteBlocking =>
       isEnglish ? 'Default site blocking' : 'Bloqueo de sitios predefinidos';
+  // ── App uniqueness validation ─────────────────────────────────────────────
+  String appAlreadyInCategory(String appName, String categoryName) =>
+      isEnglish
+          ? '$appName is already in $categoryName'
+          : '$appName ya está en $categoryName';
+  String get moveAppToThisCategory =>
+      isEnglish
+          ? 'Do you want to move it to this category?'
+          : '¿Querés moverla a esta categoría?';
+  String get moveApp => isEnglish ? 'Move' : 'Mover';
+  String get keepInCurrent =>
+      isEnglish ? 'Keep there' : 'Dejar ahí';
+
   String categoryLabel(String key) {
     switch (key) {
       case 'Redes sociales':
@@ -399,6 +412,60 @@ class AppStrings {
         return isEnglish ? '$minutes min' : '$minutes min';
     }
   }
+
+  // ── Categories ───────────────────────────────────────────────────────
+  String get categories => isEnglish ? 'Categories' : 'Categorías';
+  String get newCategory => isEnglish ? 'New category' : 'Nueva categoría';
+  String get categoryName => isEnglish ? 'Category name' : 'Nombre de categoría';
+  String get categoryLimit => isEnglish ? 'Category limit' : 'Límite de categoría';
+  String get selectCategory => isEnglish ? 'Select category' : 'Seleccionar categoría';
+  String get noCategory => isEnglish ? 'No category' : 'Sin categoría';
+  String get uncategorized => isEnglish ? 'Uncategorized' : 'Sin categoría';
+  String get chooseCategory => isEnglish ? 'Choose category' : 'Elegir categoría';
+  String get deleteCategory => isEnglish ? 'Delete category' : 'Eliminar categoría';
+  String get appsInCategory => isEnglish ? 'Apps in category' : 'Apps en categoría';
+  String get hoursLabel => isEnglish ? 'hours' : 'horas';
+  String get minutesLabel => isEnglish ? 'minutes' : 'minutos';
+  String get categoryNameHint =>
+      isEnglish ? 'e.g. Social networks' : 'ej. Redes sociales';
+  String get addCategory =>
+      isEnglish ? 'Add category' : 'Agregar categoría';
+  String get editCategory =>
+      isEnglish ? 'Edit category' : 'Editar categoría';
+  String get manageCategories =>
+      isEnglish ? 'Manage categories' : 'Gestionar categorías';
+  String get deleteCategoryConfirm =>
+      isEnglish
+          ? 'Deleting this category will move its apps to Uncategorized.'
+          : 'Eliminar esta categoría moverá sus apps a Sin categoría.';
+  String get chooseEmoji =>
+      isEnglish ? 'Choose emoji' : 'Elegir emoji';
+  String get categoryColor =>
+      isEnglish ? 'Color' : 'Color';
+  String categoryUsage(String used, String total) =>
+      isEnglish ? '$used / $total' : '$used / $total';
+  String get categoryLimitExceeded =>
+      isEnglish ? 'Category limit exceeded' : 'Límite de categoría superado';
+  String get newCategoryTitle =>
+      isEnglish ? 'New category' : 'Nueva categoría';
+  String get categoryCreated =>
+      isEnglish ? 'Category created' : 'Categoría creada';
+  String get categoryUpdated =>
+      isEnglish ? 'Category updated' : 'Categoría actualizada';
+  String get categoryDeleted =>
+      isEnglish ? 'Category deleted' : 'Categoría eliminada';
+  String get selectAppForCategory =>
+      isEnglish
+          ? 'Select apps for this category'
+          : 'Selecciona apps para esta categoría';
+  String get addAppToCategory =>
+      isEnglish ? 'Add app' : 'Agregar app';
+  String get noCategoriesYet =>
+      isEnglish ? 'No categories yet' : 'Todavía no hay categorías';
+  String get addCategorySubtitle =>
+      isEnglish
+          ? 'Create categories to group your apps and set shared limits'
+          : 'Crea categorías para agrupar tus apps y definir límites compartidos';
 
   String countLabel(int value, {String unit = ''}) =>
       unit.isEmpty ? '$value' : '$value $unit';

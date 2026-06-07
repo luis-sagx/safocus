@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/app_limits/screens/app_limits_screen.dart';
+import '../features/app_limits/screens/category_management_screen.dart';
 import '../features/blocking/screens/blocking_screen.dart';
 import '../features/home/screens/home_screen.dart';
 import '../features/notifications/screens/notifications_screen.dart';
@@ -19,6 +20,7 @@ abstract class AppRoutes {
   static const String statistics = '/statistics';
   static const String statisticsBlockedDetails = '/statistics/blocked-details';
   static const String settings = '/settings';
+  static const String categoryManagement = '/category-management';
 }
 
 final _rootKey = GlobalKey<NavigatorState>();
@@ -64,6 +66,10 @@ GoRouter buildRouter({required bool showOnboarding}) {
           GoRoute(
             path: AppRoutes.settings,
             builder: (_, __) => const SettingsScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.categoryManagement,
+            builder: (_, __) => const CategoryManagementScreen(),
           ),
         ],
       ),

@@ -25,6 +25,8 @@ abstract class AppConstants {
   static const String keyEmergencyExtUsed = 'emergency_ext_used';
   static const String keyEmergencyExtDate = 'emergency_ext_date';
   static const String keyBlockAttemptsResetDate = 'block_attempts_reset_date';
+  static const String keyAppCategories = 'app_categories';
+  static const String keyCategoriesMigrated = '_categories_migrated';
 
   // ── Notification IDs ─────────────────────────────────────────────────────
   static const int notifMotivationalId = 1000;
@@ -62,4 +64,49 @@ abstract class AppConstants {
   static const List<int> presetLimitMinutes = [15, 30, 60, 120];
   static const int focusScoreMax = 100;
   static const int limitWarningMinutes = 10; // notify when < 10 min remain
+
+  // ── App categories ────────────────────────────────────────────────────────
+  static const String uncategorizedId = '00000000-0000-0000-0000-000000000000';
+  static const List<Map<String, dynamic>> predefinedCategories = [
+    {
+      'nameEn': 'Social Media',
+      'nameEs': 'Redes Sociales',
+      'color': '#2196F3',
+      'emoji': '📱',
+      'iconName': 'users',
+      'dailyLimitMinutes': 60,
+    },
+    {
+      'nameEn': 'Games',
+      'nameEs': 'Juegos',
+      'color': '#FF5722',
+      'emoji': '🎮',
+      'iconName': 'gameController',
+      'dailyLimitMinutes': 60,
+    },
+    {
+      'nameEn': 'Video / Streaming',
+      'nameEs': 'Video / Streaming',
+      'color': '#E91E63',
+      'emoji': '▶️',
+      'iconName': 'play',
+      'dailyLimitMinutes': 120,
+    },
+    {
+      'nameEn': 'News',
+      'nameEs': 'Noticias',
+      'color': '#4CAF50',
+      'emoji': '📰',
+      'iconName': 'newspaperClipping',
+      'dailyLimitMinutes': 30,
+    },
+    {
+      'nameEn': 'Other',
+      'nameEs': 'Otros',
+      'color': '#9E9E9E',
+      'emoji': '📦',
+      'iconName': 'package',
+      'dailyLimitMinutes': 60,
+    },
+  ];
 }

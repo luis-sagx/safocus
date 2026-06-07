@@ -1,9 +1,12 @@
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
+import '../../core/constants/app_constants.dart';
 import '../../core/constants/blocked_sites.dart';
 import '../../core/constants/motivational_phrases.dart';
+import '../models/app_category.dart';
 import '../models/app_limit.dart';
 import '../models/blocked_site.dart';
 import '../models/motivational_phrase.dart';
@@ -23,6 +26,7 @@ class LocalStorage {
     final ls = LocalStorage._();
     ls._prefs = await SharedPreferences.getInstance();
     await ls._seedDefaults();
+    await ls._migrateCategoryLimits();
     _instance = ls;
     return ls;
   }
@@ -63,6 +67,89 @@ class LocalStorage {
     await savePhrases(phrases);
 
     await _prefs.setBool('_defaults_seeded', true);
+  }
+
+  // ── Migration: per‑app limits → category‑based limits ────────────────────
+
+  /// Idempotent migration that groups old [AppLimit] entries by their
+  /// `dailyLimitMinutes` value, creates one "Uncategorized" category per
+  /// distinct limit, and assigns apps to those categories.
+  Future<void> _migrateCategoryLimits() async {
+    final migrated = _prefs.getBool(AppConstants.keyCategoriesMigrated) ??
+        false;
+    if (migrated) return;
+
+    final rawLimits = _prefs.getStringList('app_limits') ?? [];
+    if (rawLimits.isEmpty) {
+      await _prefs.setBool(AppConstants.keyCategoriesMigrated, true);
+      return;
+    }
+
+    // Parse old entries and group by dailyLimitMinutes.
+    final Map<int, List<Map<String, dynamic>>> groups = {};
+    for (final raw in rawLimits) {
+      try {
+        final json = jsonDecode(raw) as Map<String, dynamic>;
+        final limit = json['dailyLimitMinutes'] as int? ?? 0;
+        groups.putIfAbsent(limit, () => []).add(json);
+      } catch (_) {
+        // Skip corrupted entries.
+      }
+    }
+
+    if (groups.isEmpty) {
+      await _prefs.setBool(AppConstants.keyCategoriesMigrated, true);
+      return;
+    }
+
+    final now = DateTime.now();
+    final newCategories = <AppCategory>[];
+    final migratedLimits = <AppLimit>[];
+
+    for (final entry in groups.entries) {
+      final limitMinutes = entry.key;
+      final apps = entry.value;
+
+      // Build a descriptive "Uncategorized" category name.
+      final category = AppCategory(
+        name: limitMinutes > 0
+            ? 'Uncategorized (${limitMinutes}min)'
+            : 'Uncategorized',
+        color: '#9E9E9E',
+        emoji: '📦',
+        dailyLimitMinutes: limitMinutes,
+        isPredefined: false,
+        createdAt: now,
+      );
+      newCategories.add(category);
+
+      for (final appJson in apps) {
+        migratedLimits.add(AppLimit(
+          id: appJson['id'] as String?,
+          packageName: appJson['packageName'] as String,
+          appName: appJson['appName'] as String,
+          categoryId: category.id,
+          effectiveLimitMinutes: limitMinutes,
+          usedMinutesToday: appJson['usedMinutesToday'] as int? ?? 0,
+          isActive: appJson['isActive'] as bool? ?? true,
+          emergencyExtUsedToday:
+              appJson['emergencyExtUsedToday'] as bool? ?? false,
+          createdAt: appJson['createdAt'] != null
+              ? DateTime.parse(appJson['createdAt'] as String)
+              : now,
+        ));
+      }
+    }
+
+    // Persist categories (merge with any existing ones).
+    final existingCategories = getAppCategories(seed: false);
+    existingCategories.addAll(newCategories);
+    await saveAppCategories(existingCategories);
+
+    // Persist migrated limits.
+    await saveAppLimits(migratedLimits);
+
+    await _prefs.setBool(AppConstants.keyCategoriesMigrated, true);
   }
 
   // ── Blocked Sites ────────────────────────────────────────────────────────
@@ -123,6 +210,65 @@ class LocalStorage {
   Future<void> deleteAppLimit(String id) async {
     final limits = getAppLimits()..removeWhere((l) => l.id == id);
     await saveAppLimits(limits);
+  }
+
+  // ── App Categories ────────────────────────────────────────────────────────
+
+  List<AppCategory> getAppCategories({bool seed = true}) {
+    final raw = _prefs.getStringList('app_categories');
+    if (raw == null || raw.isEmpty) {
+      if (seed) {
+        final predefined = _buildPredefinedCategories();
+        saveAppCategories(predefined);
+        return predefined;
+      }
+      return [];
+    }
+    return raw
+        .map(
+          (s) =>
+              AppCategory.fromJson(jsonDecode(s) as Map<String, dynamic>),
+        )
+        .toList();
+  }
+
+  Future<void> saveAppCategories(List<AppCategory> categories) async {
+    final encoded =
+        categories.map((c) => jsonEncode(c.toJson())).toList();
+    await _prefs.setStringList('app_categories', encoded);
+  }
+
+  Future<void> upsertAppCategory(AppCategory category) async {
+    final categories = getAppCategories(seed: false);
+    final idx = categories.indexWhere((c) => c.id == category.id);
+    if (idx == -1) {
+      categories.add(category);
+    } else {
+      categories[idx] = category;
+    }
+    await saveAppCategories(categories);
+  }
+
+  Future<void> deleteAppCategory(String id) async {
+    final categories = getAppCategories(seed: false)
+      ..removeWhere((c) => c.id == id);
+    await saveAppCategories(categories);
+  }
+
+  List<AppCategory> _buildPredefinedCategories() {
+    final now = DateTime.now();
+    return AppConstants.predefinedCategories.map((def) {
+      return AppCategory(
+        id: const Uuid().v4(),
+        name: def['nameEn'] as String,
+        color: def['color'] as String,
+        emoji: def['emoji'] as String? ?? '📦',
+        iconName: def['iconName'] as String?,
+        dailyLimitMinutes: def['dailyLimitMinutes'] as int,
+        isPredefined: true,
+        createdAt: now,
+      );
+    }).toList();
   }
 
   // ── Motivational Phrases ─────────────────────────────────────────────────

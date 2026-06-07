@@ -150,7 +150,57 @@ class UsageMonitorService : Service() {
         val prefs     = getSharedPreferences(BlockOverlayActivity.PREFS_BLOCK, MODE_PRIVATE)
         val appName   = prefs.getString("appname_$currentPkg", currentPkg) ?: currentPkg
         val limitMins = prefs.getInt("limitmins_$currentPkg", -1)
+        val catId     = prefs.getString("catid_$currentPkg", null)
 
+        // ── Category-aware blocking (ALC-004) ──────────────────────────────
+        if (!catId.isNullOrEmpty()) {
+            val catLimitMins = prefs.getInt("catlimit_$catId", -1)
+            if (catLimitMins > 0) {
+                // Aggregate real-time usage of all packages that share this categoryId.
+                var totalUsedMs = 0L
+                val prefsAll = prefs.all
+                for ((key, _) in prefsAll) {
+                    if (key.startsWith("catid_") && prefs.getString(key, null) == catId) {
+                        val pkg = key.removePrefix("catid_")
+                        if (pkg !in IGNORED) {
+                            totalUsedMs += getRealTimeUsageMs(usm, pkg)
+                        }
+                    }
+                }
+                val totalUsedMins = (totalUsedMs / 60_000).toInt()
+                val remainingMs   = (catLimitMins * 60_000L) - totalUsedMs
+
+                if (remainingMs > 0) {
+                    // Category still has time — show countdown (track by catId so
+                    // switching apps within the same category doesn't reset it).
+                    maybeUpdateLimitNotification(
+                        pkg = currentPkg,
+                        appName = appName,
+                        remainingMs = remainingMs,
+                        limitMins = catLimitMins,
+                        notifId = catId,
+                    )
+                } else {
+                    // Category limit reached in real-time — block immediately.
+                    cancelLimitNotification()
+
+                    val exceeded = prefs.getStringSet(
+                        FocusBlockService.KEY_EXCEEDED, emptySet()
+                    )?.toMutableSet() ?: mutableSetOf()
+                    if (currentPkg !in exceeded) {
+                        exceeded.add(currentPkg)
+                        prefs.edit()
+                            .putStringSet(FocusBlockService.KEY_EXCEEDED, exceeded)
+                            .putInt("usedmins_$currentPkg", totalUsedMins)
+                            .apply()
+                    }
+                    triggerBlock(currentPkg, appName, totalUsedMins, catLimitMins, now)
+                }
+                return
+            }
+        }
+
+        // ── Per-package limit (backward compat, no categoryId set) ─────────
         if (limitMins > 0) {
             // Real-time usage via UsageStatsManager (Bug 4 core fix)
             val realUsedMs   = getRealTimeUsageMs(usm, currentPkg)
@@ -446,22 +496,28 @@ class UsageMonitorService : Service() {
      * Shows or refreshes the limit countdown notification.
      * Throttled: updates every 60 s normally, every 30 s when < 2 min remaining,
      * or immediately when the tracked package changes.
+     *
+     * @param notifId If provided (category-aware path), uses this identity for
+     *        tracking instead of [pkg]. Switches within the same category won't
+     *        reset the notification.
      */
     private fun maybeUpdateLimitNotification(
         pkg: String,
         appName: String,
         remainingMs: Long,
         limitMins: Int,
+        notifId: String? = null,
     ) {
         val now = System.currentTimeMillis()
         val updateInterval = if (remainingMs < 120_000L) 30_000L else 60_000L
+        val identity = notifId ?: pkg
 
-        // Always update when the app in focus changes.
-        if (pkg != limitNotifPkg || now - lastNotifUpdateTime >= updateInterval) {
-            if (pkg != limitNotifPkg) {
-                cancelLimitNotification()   // clear previous app's notification
+        // Always update when the tracked identity changes.
+        if (identity != limitNotifPkg || now - lastNotifUpdateTime >= updateInterval) {
+            if (identity != limitNotifPkg) {
+                cancelLimitNotification()   // clear previous app/category's notification
             }
-            limitNotifPkg       = pkg
+            limitNotifPkg       = identity
             lastNotifUpdateTime = now
             showLimitNotification(pkg, appName, remainingMs, limitMins)
         }

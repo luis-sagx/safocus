@@ -294,7 +294,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       child: OutlinedButton(
                         onPressed: _openUsageSettings,
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.error),
+                          side: const BorderSide(color: AppColors.secondary),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
@@ -303,7 +303,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         child: Text(
                           strings.onboardingUsageStatsButton,
                           style: AppTypography.labelLarge.copyWith(
-                            color: AppColors.error,
+                            color: AppColors.secondary,
                           ),
                         ),
                       ),
@@ -314,7 +314,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       child: OutlinedButton(
                         onPressed: _openOverlaySettings,
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.error),
+                          side: const BorderSide(color: AppColors.secondary),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
@@ -323,7 +323,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         child: Text(
                           strings.onboardingOverlayButton,
                           style: AppTypography.labelLarge.copyWith(
-                            color: AppColors.error,
+                            color: AppColors.secondary,
                           ),
                         ),
                       ),

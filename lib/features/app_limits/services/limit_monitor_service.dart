@@ -74,10 +74,10 @@ class LimitMonitorService {
   void _processLimitsSync(List<AppLimit> limits) {
     for (int i = 0; i < limits.length; i++) {
       final limit = limits[i];
-      if (!limit.isActive || limit.dailyLimitMinutes <= 0) continue;
+      if (!limit.isActive || limit.effectiveLimitMinutes <= 0) continue;
 
       final remaining = limit.remainingMinutes;
-      final totalSecs = limit.dailyLimitMinutes * 60;
+      final totalSecs = limit.effectiveLimitMinutes * 60;
       final remainingSecs = remaining * 60;
 
       // Warning notification when < 10 min & crossing into warning zone
@@ -113,10 +113,10 @@ class LimitMonitorService {
   static Future<void> _processLimits(List<AppLimit> limits) async {
     for (int i = 0; i < limits.length; i++) {
       final limit = limits[i];
-      if (!limit.isActive || limit.dailyLimitMinutes <= 0) continue;
+      if (!limit.isActive || limit.effectiveLimitMinutes <= 0) continue;
 
       final remaining = limit.remainingMinutes;
-      final totalSecs = limit.dailyLimitMinutes * 60;
+      final totalSecs = limit.effectiveLimitMinutes * 60;
       final remainingSecs = remaining * 60;
 
       if (remaining < AppConstants.limitWarningMinutes && remaining > 0) {

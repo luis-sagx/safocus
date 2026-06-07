@@ -5,16 +5,20 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
 import android.os.Process
 import android.provider.Settings
+import android.util.Base64
 import androidx.core.app.ActivityCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import java.io.ByteArrayOutputStream
 import java.util.Calendar
 import java.util.TimeZone
 
@@ -161,6 +165,17 @@ class MainActivity : FlutterActivity() {
                             val pkg = app["packageName"] as String
                             edit.putString("appname_$pkg", app["appName"] as? String ?: pkg)
                             edit.putInt("limitmins_$pkg", (app["limitMinutes"] as? Int) ?: 0)
+                            // Category-aware sync (ALC-011): store categoryId per package
+                            // and the category-level daily limit so UsageMonitorService
+                            // can aggregate usage across all apps in the same category.
+                            val catId = app["categoryId"] as? String
+                            if (!catId.isNullOrEmpty()) {
+                                edit.putString("catid_$pkg", catId)
+                                val catLimit = app["categoryLimitMinutes"] as? Int
+                                if (catLimit != null && catLimit > 0) {
+                                    edit.putInt("catlimit_$catId", catLimit)
+                                }
+                            }
                         }
                         edit.apply()
                         result.success(null)
@@ -322,7 +337,32 @@ class MainActivity : FlutterActivity() {
             .filter { it.activityInfo.packageName != packageName }
             .mapNotNull { ri ->
                 try {
-                    mapOf("name" to ri.loadLabel(pm).toString(), "package" to ri.activityInfo.packageName)
+                    val iconBase64 = try {
+                        val drawable = ri.activityInfo.loadIcon(pm)
+                        val bitmap = (drawable as? BitmapDrawable)?.bitmap
+                            ?: run {
+                                // Fallback: render drawable to a bitmap if not a BitmapDrawable
+                                val bmp = Bitmap.createBitmap(
+                                    drawable.intrinsicWidth.coerceAtLeast(1),
+                                    drawable.intrinsicHeight.coerceAtLeast(1),
+                                    Bitmap.Config.ARGB_8888
+                                )
+                                val canvas = android.graphics.Canvas(bmp)
+                                drawable.setBounds(0, 0, canvas.width, canvas.height)
+                                drawable.draw(canvas)
+                                bmp
+                            }
+                        val baos = ByteArrayOutputStream()
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 80, baos)
+                        Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP)
+                    } catch (_: Throwable) {
+                        ""
+                    }
+                    mapOf(
+                        "name" to ri.loadLabel(pm).toString(),
+                        "package" to ri.activityInfo.packageName,
+                        "icon" to iconBase64,
+                    )
                 } catch (_: Exception) { null }
             }
             .sortedBy { it["name"]!!.lowercase() }
