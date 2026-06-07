@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/app_limits/screens/app_limits_screen.dart';
-import '../features/app_limits/screens/category_management_screen.dart';
+import '../features/app_limits/screens/category_detail_screen.dart';
 import '../features/blocking/screens/blocking_screen.dart';
 import '../features/home/screens/home_screen.dart';
 import '../features/notifications/screens/notifications_screen.dart';
@@ -20,7 +20,7 @@ abstract class AppRoutes {
   static const String statistics = '/statistics';
   static const String statisticsBlockedDetails = '/statistics/blocked-details';
   static const String settings = '/settings';
-  static const String categoryManagement = '/category-management';
+  static const String categoryDetail = '/app-limits/category';
 }
 
 final _rootKey = GlobalKey<NavigatorState>();
@@ -67,11 +67,15 @@ GoRouter buildRouter({required bool showOnboarding}) {
             path: AppRoutes.settings,
             builder: (_, __) => const SettingsScreen(),
           ),
-          GoRoute(
-            path: AppRoutes.categoryManagement,
-            builder: (_, __) => const CategoryManagementScreen(),
-          ),
         ],
+      ),
+
+      // ── Category detail (full-screen, outside shell) ───────────────────
+      GoRoute(
+        path: '${AppRoutes.categoryDetail}/:categoryId',
+        builder: (_, state) => CategoryDetailScreen(
+          categoryId: state.pathParameters['categoryId']!,
+        ),
       ),
     ],
   );
