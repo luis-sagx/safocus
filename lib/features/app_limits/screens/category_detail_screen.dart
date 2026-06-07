@@ -73,6 +73,29 @@ class _CachedApp {
 List<_CachedApp>? _cachedApps;
 bool _appsLoading = false;
 
+/// Pre-warms the app cache in the background.
+/// Called from CategoryDetailScreen.initState so apps are ready by the time
+/// the user presses "+".
+Future<void> _warmAppCache() async {
+  if (_cachedApps != null || _appsLoading) return;
+  _appsLoading = true;
+  try {
+    const channel = MethodChannel('com.example.safocus/apps');
+    final raw = await channel.invokeListMethod<Map>('getInstalledApps');
+    _cachedApps = (raw ?? [])
+        .map((m) => _CachedApp(
+              name: m['name'] as String,
+              packageName: m['package'] as String,
+              iconBase64: (m['icon'] as String?) ?? '',
+            ))
+        .toList();
+  } catch (_) {
+    // Silently fail — the picker will retry when opened.
+  } finally {
+    _appsLoading = false;
+  }
+}
+
 // ── Screen ──────────────────────────────────────────────────────────────────
 
 class CategoryDetailScreen extends ConsumerStatefulWidget {
@@ -85,6 +108,13 @@ class CategoryDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Pre-warm the app cache so the "+" picker opens instantly.
+    _warmAppCache();
+  }
+
   @override
   Widget build(BuildContext context) {
     final limitsState = ref.watch(appLimitsProvider);
@@ -419,8 +449,6 @@ class _AppPickerSheet extends StatefulWidget {
 }
 
 class _AppPickerSheetState extends State<_AppPickerSheet> {
-  static const _channel = MethodChannel('com.example.safocus/apps');
-
   List<_CachedApp> _all = [];
   List<_CachedApp> _filtered = [];
   bool _loading = true;
@@ -441,36 +469,25 @@ class _AppPickerSheetState extends State<_AppPickerSheet> {
   }
 
   Future<void> _load() async {
-    // Return cached if available
+    // If cache is already warm, use it immediately.
     if (_cachedApps != null) {
       _applyCache();
       return;
     }
 
-    // Prevent concurrent loads
-    if (_appsLoading) return;
-    _appsLoading = true;
+    // Cache is being loaded by _warmAppCache() or hasn't started yet.
+    // Wait for it to finish.
+    await _warmAppCache();
 
-    try {
-      final raw = await _channel.invokeListMethod<Map>('getInstalledApps');
-      final apps = (raw ?? [])
-          .map((m) => _CachedApp(
-                name: m['name'] as String,
-                packageName: m['package'] as String,
-                iconBase64: (m['icon'] as String?) ?? '',
-              ))
-          .toList();
-      _cachedApps = apps;
+    if (!mounted) return;
+
+    if (_cachedApps != null) {
       _applyCache();
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _error = AppStrings.of(context).failedToLoadApps(e.toString());
-          _loading = false;
-        });
-      }
-    } finally {
-      _appsLoading = false;
+    } else {
+      setState(() {
+        _error = AppStrings.of(context).failedToLoadApps('');
+        _loading = false;
+      });
     }
   }
 
