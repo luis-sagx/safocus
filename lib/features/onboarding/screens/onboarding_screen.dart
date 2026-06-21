@@ -23,27 +23,31 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final _controller = PageController();
   int _page = 0;
+  int _scrollHoursPerDay = 3;
+  String? _selectedIdentity;
 
   List<_Slide> _slides(BuildContext context) {
     final strings = AppStrings.of(context);
     return [
       _Slide(
-        icon: PhosphorIconsFill.shieldCheck,
+        icon: PhosphorIconsFill.clockCountdown,
         title: strings.onboardingSlide1Title,
         body: strings.onboardingSlide1Body,
-        accent: AppColors.primary,
-      ),
-      _Slide(
-        icon: PhosphorIconsFill.clockCountdown,
-        title: strings.onboardingSlide2Title,
-        body: strings.onboardingSlide2Body,
-        accent: AppColors.secondary,
+        accent: AppColors.error,
+        isScrollInputSlide: true,
       ),
       _Slide(
         icon: PhosphorIconsFill.lightning,
+        title: strings.onboardingSlide2Title,
+        body: strings.onboardingSlide2Body,
+        accent: AppColors.warning,
+        isIdentityChoiceSlide: true,
+      ),
+      _Slide(
+        icon: PhosphorIconsFill.trophy,
         title: strings.onboardingSlide3Title,
         body: strings.onboardingSlide3Body,
-        accent: AppColors.warning,
+        accent: AppColors.secondary,
       ),
       _Slide(
         icon: PhosphorIconsFill.lock,
@@ -69,23 +73,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       builder: (_) => const _PinSetupDialog(),
     );
 
-    // If PIN was created, move to next slide
     if (result != null && mounted && _page == slides.length - 2) {
-      // Ensure SettingsProvider reflects the new PIN state so the toggle
-      // in SettingsScreen appears enabled immediately.
       try {
         final container = ProviderScope.containerOf(context);
-        // Call togglePin to persist and update provider state. If PIN was
-        // already saved by AuthService, this is idempotent.
         await container
             .read(
-              // ignore: invalid_use_of_visible_for_testing_member
-              // Using the notifier provider directly to update settings state.
-              // This keeps the SettingsState in sync with LocalStorage.
-              // The settings provider path is resolved at compile time.
-              // We import the provider to access it.
-              // NOTE: We import flutter_riverpod above to access ProviderScope.
-              // Using a dynamic read to avoid circular imports in some setups.
               settingsProvider.notifier,
             )
             .togglePin(true, pin: result);
@@ -166,7 +158,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Logo + skip row
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 12, 16, 0),
               child: Row(
@@ -193,22 +184,36 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
 
-            // Pages
             Expanded(
               child: PageView.builder(
                 controller: _controller,
                 onPageChanged: (i) => setState(() => _page = i),
                 itemCount: slides.length,
-                itemBuilder: (_, i) => _SlidePage(slide: slides[i]),
+                itemBuilder: (_, i) => _SlidePage(
+                  slide: slides[i],
+                  scrollHours: _scrollHoursPerDay,
+                  selectedIdentity: _selectedIdentity,
+                  onScrollIncrement: () {
+                    setState(() {
+                      _scrollHoursPerDay = (_scrollHoursPerDay + 1).clamp(1, 8);
+                    });
+                  },
+                  onScrollDecrement: () {
+                    setState(() {
+                      _scrollHoursPerDay = (_scrollHoursPerDay - 1).clamp(1, 8);
+                    });
+                  },
+                  onIdentitySelect: (identity) {
+                    setState(() => _selectedIdentity = identity);
+                  },
+                ),
               ),
             ),
 
-            // Dots + button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
               child: Column(
                 children: [
-                  // Indicator dots
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(slides.length, (i) {
@@ -229,7 +234,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     }),
                   ),
                   const SizedBox(height: 32),
-                  // PIN setup buttons (custom UI for PIN slide)
                   if (slides[_page].isPinSlide) ...[
                     SizedBox(
                       width: double.infinity,
@@ -281,12 +285,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         ),
                         child: Text(
-                          _page == slides.length - 1 ? strings.start : strings.next,
+                          _page == slides.length - 1
+                              ? strings.onboardingCta
+                              : strings.next,
                           style: AppTypography.labelLarge,
                         ),
                       ),
                     ),
-                  // On the last slide, show permission buttons.
                   if (_page == slides.length - 1) ...[
                     const SizedBox(height: 12),
                     SizedBox(
@@ -345,27 +350,62 @@ class _Slide {
   final String body;
   final Color accent;
   final bool isPinSlide;
+  final bool isScrollInputSlide;
+  final bool isIdentityChoiceSlide;
+
   const _Slide({
     required this.icon,
     required this.title,
     required this.body,
     required this.accent,
     this.isPinSlide = false,
+    this.isScrollInputSlide = false,
+    this.isIdentityChoiceSlide = false,
   });
 }
 
 class _SlidePage extends StatelessWidget {
-  const _SlidePage({required this.slide});
+  const _SlidePage({
+    required this.slide,
+    required this.scrollHours,
+    required this.selectedIdentity,
+    this.onScrollIncrement,
+    this.onScrollDecrement,
+    this.onIdentitySelect,
+  });
+
   final _Slide slide;
+  final int scrollHours;
+  final String? selectedIdentity;
+  final VoidCallback? onScrollIncrement;
+  final VoidCallback? onScrollDecrement;
+  final void Function(String)? onIdentitySelect;
+
+  String _costMirrorBody(BuildContext context) {
+    final strings = AppStrings.of(context);
+    const weeksPerYear = 52;
+    final hoursPerYear = scrollHours * 7 * weeksPerYear;
+    final books = (hoursPerYear / 8).round();
+    final episodes = (hoursPerYear / 0.75).round();
+    final workouts = (hoursPerYear / 1.0).round();
+    if (strings.isEnglish) {
+      return "That's ${hoursPerYear}h/year scrolling → $books books / $episodes episodes / $workouts workouts";
+    } else {
+      return "Son ${hoursPerYear}h/año scrolleando → $books libros / $episodes episodios / $workouts entrenamientos";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
+
+    final String bodyText = _resolveBody(context, strings);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Icon circle
           Container(
             width: 120,
             height: 120,
@@ -383,13 +423,123 @@ class _SlidePage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            slide.body,
+            bodyText,
             style: AppTypography.bodyLarge.copyWith(
               color: AppColors.textSecondary,
             ),
             textAlign: TextAlign.center,
           ),
+          if (slide.isScrollInputSlide) ...[
+            const SizedBox(height: 32),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: Icon(PhosphorIconsRegular.minus, color: slide.accent),
+                  onPressed: onScrollDecrement,
+                ),
+                const SizedBox(width: 16),
+                Text(
+                  '$scrollHours',
+                  style: AppTypography.displayLarge.copyWith(color: slide.accent),
+                ),
+                const SizedBox(width: 16),
+                IconButton(
+                  icon: Icon(PhosphorIconsRegular.plus, color: slide.accent),
+                  onPressed: onScrollIncrement,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              strings.isEnglish ? 'hours / day' : 'horas / día',
+              style: AppTypography.bodyMedium,
+            ),
+          ],
+          if (slide.isIdentityChoiceSlide) ...[
+            const SizedBox(height: 32),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              alignment: WrapAlignment.center,
+              children: [
+                _IdentityChip(
+                  label: strings.isEnglish ? '📚 Study' : '📚 Estudiar',
+                  selected: selectedIdentity == 'study',
+                  accent: slide.accent,
+                  onTap: () => onIdentitySelect?.call('study'),
+                ),
+                _IdentityChip(
+                  label: '💪 Gym',
+                  selected: selectedIdentity == 'gym',
+                  accent: slide.accent,
+                  onTap: () => onIdentitySelect?.call('gym'),
+                ),
+                _IdentityChip(
+                  label: strings.isEnglish ? '🎨 Create' : '🎨 Crear',
+                  selected: selectedIdentity == 'create',
+                  accent: slide.accent,
+                  onTap: () => onIdentitySelect?.call('create'),
+                ),
+                _IdentityChip(
+                  label: strings.isEnglish ? '😴 Sleep well' : '😴 Dormir bien',
+                  selected: selectedIdentity == 'sleep',
+                  accent: slide.accent,
+                  onTap: () => onIdentitySelect?.call('sleep'),
+                ),
+              ],
+            ),
+          ],
         ],
+      ),
+    );
+  }
+
+  String _resolveBody(BuildContext context, AppStrings strings) {
+    if (slide.icon == PhosphorIconsFill.trophy &&
+        !slide.isScrollInputSlide &&
+        !slide.isIdentityChoiceSlide &&
+        !slide.isPinSlide) {
+      return _costMirrorBody(context);
+    }
+    return slide.body;
+  }
+}
+
+class _IdentityChip extends StatelessWidget {
+  const _IdentityChip({
+    required this.label,
+    required this.selected,
+    required this.accent,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final Color accent;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected ? accent.withOpacity(0.15) : AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected ? accent : AppColors.surfaceVariant,
+            width: selected ? 2 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.labelLarge.copyWith(
+            color: selected ? accent : AppColors.textSecondary,
+          ),
+        ),
       ),
     );
   }
@@ -427,7 +577,6 @@ class _PinSetupDialogState extends State<_PinSetupDialog> {
       return;
     }
 
-    // Save PIN to AuthService
     try {
       await AuthService.instance.setPin(p1);
       if (mounted) {

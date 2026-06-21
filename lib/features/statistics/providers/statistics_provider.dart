@@ -10,14 +10,14 @@ import '../../../data/models/usage_stat.dart';
 class StatisticsState {
   final List<DailyUsageStat> weekStats; // last 7 days
   final List<BlockAttempt> recentAttempts;
-  final int todayFocusScore;
+  final int todayLockInScore;
   final int streakDays;
   final bool isLoading;
 
   const StatisticsState({
     this.weekStats = const [],
     this.recentAttempts = const [],
-    this.todayFocusScore = 0,
+    this.todayLockInScore = 0,
     this.streakDays = 0,
     this.isLoading = false,
   });
@@ -25,13 +25,13 @@ class StatisticsState {
   StatisticsState copyWith({
     List<DailyUsageStat>? weekStats,
     List<BlockAttempt>? recentAttempts,
-    int? todayFocusScore,
+    int? todayLockInScore,
     int? streakDays,
     bool? isLoading,
   }) => StatisticsState(
     weekStats: weekStats ?? this.weekStats,
     recentAttempts: recentAttempts ?? this.recentAttempts,
-    todayFocusScore: todayFocusScore ?? this.todayFocusScore,
+    todayLockInScore: todayLockInScore ?? this.todayLockInScore,
     streakDays: streakDays ?? this.streakDays,
     isLoading: isLoading ?? this.isLoading,
   );
@@ -101,7 +101,7 @@ class StatisticsNotifier extends StateNotifier<StatisticsState> {
     state = StatisticsState(
       weekStats: weekStats,
       recentAttempts: recentAttempts,
-      todayFocusScore: focusScore,
+      todayLockInScore: focusScore,
       streakDays: streak,
     );
   }

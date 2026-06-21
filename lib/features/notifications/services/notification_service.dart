@@ -60,8 +60,8 @@ class NotificationService {
       strings.appLimitScreenTitle,
       description:
           strings.isEnglish
-              ? 'Usage limit alerts'
-              : 'Alertas de límites de uso',
+              ? 'Comeback reminders when you hit a limit'
+              : 'Recordatorios de comeback al llegar al límite',
       importance: Importance.high,
       showBadge: true,
     );
@@ -210,18 +210,16 @@ class NotificationService {
     final strings = _strings;
     await _plugin.show(
       AppConstants.notifAppLimitId,
-      strings.isEnglish ? 'Limit reached' : 'Límite alcanzado',
-      strings.isEnglish
-          ? 'You have reached the daily limit for $appName.'
-          : 'Has alcanzado el límite diario para $appName.',
+      strings.limitReachedTitle,
+      strings.limitReachedBody(appName),
       NotificationDetails(
         android: AndroidNotificationDetails(
           AppConstants.notifChannelAlerts,
           strings.appLimitScreenTitle,
           channelDescription:
               strings.isEnglish
-                  ? 'Usage limit alerts'
-                  : 'Alertas de límites de uso',
+                  ? 'Comeback reminders when you hit a limit'
+                  : 'Recordatorios de comeback al llegar al límite',
           importance: Importance.high,
           priority: Priority.high,
           icon: '@mipmap/ic_launcher',
@@ -243,19 +241,11 @@ class NotificationService {
     required int appIndex,
   }) async {
     final strings = _strings;
-    final body =
-        remainingMinutes <= 1
-            ? (strings.isEnglish
-                ? 'Less than 1 minute left for $appName!'
-                : '¡Menos de 1 minuto restante para $appName!')
-            : (strings.isEnglish
-                ? '$remainingMinutes minutes left for $appName'
-                : '$remainingMinutes minutos restantes para $appName');
 
     await _plugin.show(
       AppConstants.notifLimitWarningBase + appIndex,
-      strings.isEnglish ? '⏰ Limit soon' : '⏰ Límite próximo',
-      body,
+      strings.limitWarningTitle,
+      strings.limitWarningBody(appName, remainingMinutes),
       NotificationDetails(
         android: AndroidNotificationDetails(
           AppConstants.notifChannelLimitWarning,

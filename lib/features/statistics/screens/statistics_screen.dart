@@ -93,7 +93,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
               sliver: SliverToBoxAdapter(
                 child: Row(
                   children: [
-                    Expanded(child: _ScoreCard(score: state.todayFocusScore)),
+                    Expanded(child: _ScoreCard(score: state.todayLockInScore)),
                     const SizedBox(width: 12),
                     Expanded(child: _StreakCard(days: state.streakDays)),
                   ],
@@ -101,6 +101,17 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
               ),
             ),
 
+            const SliverPadding(padding: EdgeInsets.only(top: 20)),
+
+            // Lock-In Card share banner
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              sliver: SliverToBoxAdapter(
+                child: _ShareCardBanner(
+                  onTap: () => context.go(AppRoutes.lockInCard),
+                ),
+              ),
+            ),
             const SliverPadding(padding: EdgeInsets.only(top: 20)),
 
             // Usage bar chart
@@ -767,6 +778,72 @@ String _normalizeDomain(String domain) {
     return parts.sublist(parts.length - 3).join('.');
   }
   return parts.sublist(parts.length - 2).join('.');
+}
+
+// ── Lock-In Card share banner ──────────────────────────────────────────────
+
+class _ShareCardBanner extends StatelessWidget {
+  const _ShareCardBanner({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppColors.primary.withOpacity(0.2),
+              AppColors.secondary.withOpacity(0.2),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              PhosphorIconsFill.shareNetwork,
+              color: AppColors.primary,
+              size: 28,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    strings.isEnglish
+                        ? 'Share your Lock-In Card'
+                        : 'Compartí tu Lock-In Card',
+                    style: AppTypography.headlineSmall,
+                  ),
+                  Text(
+                    strings.isEnglish
+                        ? 'Show your week. Flex the streak.'
+                        : 'Mostrá tu semana. Flexeá la racha.',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              PhosphorIconsRegular.arrowRight,
+              color: AppColors.textSecondary,
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _StatPill extends StatelessWidget {

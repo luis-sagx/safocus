@@ -10,6 +10,7 @@ import '../../../core/utils/date_utils.dart';
 import '../../../core/utils/focus_score.dart';
 import '../../../features/app_limits/providers/app_limits_provider.dart';
 import '../../../features/blocking/providers/blocking_provider.dart';
+import '../../../features/focus_duo/providers/duo_provider.dart';
 import '../../../features/statistics/providers/statistics_provider.dart';
 import '../../../navigation/app_router.dart';
 
@@ -75,7 +76,7 @@ class HomeScreen extends ConsumerWidget {
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               sliver: SliverToBoxAdapter(
-                child: _FocusScoreCard(score: stats.todayFocusScore),
+                child: _FocusScoreCard(score: stats.todayLockInScore),
               ),
             ),
 
@@ -166,6 +167,18 @@ class HomeScreen extends ConsumerWidget {
                       ),
                     ),
                   ],
+                ),
+              ),
+            ),
+
+            const SliverPadding(padding: EdgeInsets.only(top: 16)),
+
+            // ── Focus Duo banner ────────────────────────────────────────
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              sliver: SliverToBoxAdapter(
+                child: _DuoBanner(
+                  onTap: () => context.push(AppRoutes.focusDuo),
                 ),
               ),
             ),
@@ -550,6 +563,73 @@ class _BannerButton extends StatelessWidget {
         child: Text(
           label,
           style: AppTypography.labelSmall.copyWith(color: Colors.white),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Focus Duo banner ─────────────────────────────────────────────────────────
+
+class _DuoBanner extends ConsumerWidget {
+  const _DuoBanner({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppStrings.of(context);
+    final duo = ref.watch(duoProvider);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: duo != null
+                ? AppColors.warning.withOpacity(0.4)
+                : AppColors.border,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.warning.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                PhosphorIconsFill.users,
+                color: AppColors.warning,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(strings.focusDuo, style: AppTypography.labelLarge),
+                  Text(
+                    duo != null
+                        ? strings.duoStreakLabel(duo.sharedStreakDays)
+                        : strings.focusDuoSubtitle,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              PhosphorIconsRegular.arrowRight,
+              color: AppColors.textSecondary,
+              size: 18,
+            ),
+          ],
         ),
       ),
     );

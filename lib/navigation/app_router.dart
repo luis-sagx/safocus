@@ -4,10 +4,12 @@ import 'package:go_router/go_router.dart';
 import '../features/app_limits/screens/app_limits_screen.dart';
 import '../features/app_limits/screens/category_detail_screen.dart';
 import '../features/blocking/screens/blocking_screen.dart';
+import '../features/focus_duo/screens/duo_screen.dart';
 import '../features/home/screens/home_screen.dart';
 import '../features/notifications/screens/notifications_screen.dart';
 import '../features/onboarding/screens/onboarding_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
+import '../features/lock_in_card/screens/lock_in_card_screen.dart';
 import '../features/statistics/screens/statistics_screen.dart';
 import 'app_shell.dart';
 
@@ -21,6 +23,8 @@ abstract class AppRoutes {
   static const String statisticsBlockedDetails = '/statistics/blocked-details';
   static const String settings = '/settings';
   static const String categoryDetail = '/app-limits/category';
+  static const String lockInCard = '/lock-in-card';
+  static const String focusDuo = '/focus-duo';
 }
 
 final _rootKey = GlobalKey<NavigatorState>();
@@ -68,6 +72,18 @@ GoRouter buildRouter({required bool showOnboarding}) {
             builder: (_, __) => const SettingsScreen(),
           ),
         ],
+      ),
+
+      // ── Lock-In Card (full-screen, no bottom nav) ──────────────────────
+      GoRoute(
+        path: AppRoutes.lockInCard,
+        builder: (_, __) => const LockInCardScreen(),
+      ),
+
+      // ── Focus Duo (full-screen, no bottom nav) ─────────────────────────
+      GoRoute(
+        path: AppRoutes.focusDuo,
+        builder: (_, __) => const DuoScreen(),
       ),
 
       // ── Category detail (full-screen, outside shell) ───────────────────

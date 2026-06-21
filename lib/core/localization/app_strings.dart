@@ -69,6 +69,7 @@ class AppStrings {
   String get skip => isEnglish ? 'Skip' : 'Omitir';
   String get next => isEnglish ? 'Next' : 'Siguiente';
   String get start => isEnglish ? 'Start' : 'Empezar';
+  String get onboardingCta => isEnglish ? 'Lock in' : 'Quiero locked in';
 
   String get permissionsBlocking =>
       isEnglish ? 'Blocking permissions' : 'Permisos de bloqueo';
@@ -87,31 +88,31 @@ class AppStrings {
   String get activate => isEnglish ? 'Activate' : 'Activar';
 
   String get home => isEnglish ? 'Home' : 'Inicio';
-  String get blocking => isEnglish ? 'Blocking' : 'Bloqueo';
-  String get statistics => isEnglish ? 'Statistics' : 'Estadísticas';
+  String get blocking => isEnglish ? 'Lock In' : 'Lock In';
+  String get statistics => isEnglish ? 'Stats' : 'Stats';
   String get limits => isEnglish ? 'Limits' : 'Límites';
 
-  String get focusScore => isEnglish ? 'Focus score' : 'Puntaje de Enfoque';
+  String get focusScore => isEnglish ? 'Lock-In Score' : 'Lock-In Score';
   String get basedOnActiveBlocks =>
       isEnglish
-          ? 'Based on your active limits and blocks today'
-          : 'Basado en tus límites y bloqueos activos hoy';
-  String get webBlocking => isEnglish ? 'Web blocking' : 'Bloqueo Web';
+          ? 'Based on your focus and habits today'
+          : 'Basado en tu enfoque y hábitos de hoy';
+  String get webBlocking => isEnglish ? 'Lock In Shield' : 'Escudo Lock In';
   String get active => isEnglish ? 'Active' : 'Activo';
   String get inactive => isEnglish ? 'Inactive' : 'Inactivo';
   String get blockedToday => isEnglish ? 'Today' : 'Hoy';
-  String get appUsageLimits => isEnglish ? 'Usage limits' : 'Límites de uso';
+  String get appUsageLimits => isEnglish ? 'Your setup' : 'Tu setup';
   String get seeAll => isEnglish ? 'See all' : 'Ver todos';
   String get noLimitsConfigured =>
-      isEnglish ? 'No limits configured' : 'Sin límites configurados';
+      isEnglish ? 'No setup yet' : 'Sin setup aún';
   String get addAppsToLimitSubtitle =>
       isEnglish
           ? 'Add daily limits to your distracting apps'
           : 'Agrega límites diarios a tus apps distractoras';
   String get addUsageLimitsSubtitle =>
       isEnglish
-          ? 'Add daily limits to your distracting apps'
-          : 'Agrega límites diarios a tus apps distractoras';
+          ? 'Add limits to the apps that pull you away'
+          : 'Agregá límites a las apps que te distraen';
   String get addLimit => isEnglish ? 'Add limit' : 'Agregar límite';
   String get addApplication => isEnglish ? 'Add app' : 'Agregar aplicación';
   String get blockingNotActiveTitle =>
@@ -123,23 +124,23 @@ class AppStrings {
           ? 'Missing permissions so SaFocus can block apps when the daily limit is exceeded.'
           : 'Faltan permisos para que SaFocus bloquee apps al superar el límite diario.';
   String get appLimitScreenTitle =>
-      isEnglish ? 'App limits' : 'Límites de Apps';
+      isEnglish ? 'Your setup' : 'Tu setup';
   String get appLimitScreenSubtitle =>
       isEnglish
-          ? 'Control how much time you spend in each app'
-          : 'Controla cuánto tiempo usas cada aplicación';
+          ? 'The stuff that tempts you. You set the rules.'
+          : 'Lo que te tienta. Vos ponés las reglas.';
   String get delete => isEnglish ? 'Delete' : 'Eliminar';
   String get used => isEnglish ? 'used' : 'usado';
   String get limitPrefix => isEnglish ? 'Limit:' : 'Límite:';
   String get emergencyExtensionAlreadyUsed =>
       isEnglish
-          ? 'You already used today’s emergency extension.'
+          ? "You already used today's emergency extension."
           : 'Ya utilizaste la extensión de emergencia hoy.';
   String emergencyExtensionLabel(int minutes) =>
       isEnglish
-          ? 'Emergency extension +${minutes}min'
-          : 'Extensión de emergencia +${minutes}min';
-  String get limitExceeded => isEnglish ? 'Limit exceeded' : 'Límite superado';
+          ? '+${minutes}min — use it wisely'
+          : '+${minutes}min — usalo bien';
+  String get limitExceeded => isEnglish ? 'Comeback time.' : 'Va de nuevo.';
   String remainingMinutes(String formatted) =>
       isEnglish ? '$formatted left' : '$formatted restantes';
 
@@ -161,23 +162,23 @@ class AppStrings {
 
   String get blockWebDescription =>
       isEnglish
-          ? 'Turn on the VPN shield to block distracting sites'
-          : 'Activa el escudo VPN para bloquear sitios distractores';
+          ? 'Activate the VPN shield to lock in from distracting sites'
+          : 'Activá el escudo VPN para locked in de los sitios que te distraen';
   String get vpnCouldNotActivate =>
       isEnglish
           ? 'Could not activate VPN. Check permissions.'
           : 'No se pudo activar el VPN. Verifica los permisos.';
   String get mySites => isEnglish ? 'My sites' : 'Mis sitios';
   String get predefined => isEnglish ? 'Predefined' : 'Predefinidos';
-  String get shieldActive => isEnglish ? 'Shield active' : 'Escudo Activo';
+  String get shieldActive => isEnglish ? 'Locked In 🔒' : 'Locked In 🔒';
   String get shieldInactive =>
-      isEnglish ? 'Shield inactive' : 'Escudo Inactivo';
+      isEnglish ? 'Lock In off' : 'Lock In apagado';
   String customSitesCount(int count) =>
-      isEnglish ? '$count blocked sites' : '$count sitios bloqueados';
+      isEnglish ? '$count sites locked out' : '$count sitios bloqueados';
   String get tapToEnableVpn =>
       isEnglish
-          ? 'Tap to enable VPN blocking'
-          : 'Toca para activar el bloqueo VPN';
+          ? 'Tap to lock in'
+          : 'Toca para locked in';
   String get noCustomSites =>
       isEnglish ? 'No custom sites' : 'Sin sitios personalizados';
   String get addUrlsToBlock =>
@@ -251,10 +252,10 @@ class AppStrings {
   String get languageLabel => isEnglish ? 'Language:' : 'Idioma:';
   String get savePhrase => isEnglish ? 'Save phrase' : 'Guardar frase';
 
-  String get statisticsTitle => isEnglish ? 'Statistics' : 'Estadísticas';
+  String get statisticsTitle => isEnglish ? 'Your week locked in' : 'Tu semana locked in';
   String get last7Days => isEnglish ? 'Last 7 days' : 'Últimos 7 días';
-  String get todayScore => isEnglish ? 'Today’s score' : 'Puntaje hoy';
-  String get streak => isEnglish ? 'Streak' : 'Racha';
+  String get todayScore => isEnglish ? 'Lock-In Score' : 'Lock-In Score';
+  String get streak => isEnglish ? 'Days locked in' : 'Días locked in';
   String dayWord(int days) =>
       isEnglish ? (days == 1 ? 'day' : 'days') : (days == 1 ? 'día' : 'días');
   String get dailyUsageMinutes =>
@@ -265,8 +266,8 @@ class AppStrings {
           : 'Aún no hay historial suficiente para mostrar la gráfica. La app necesita registrar algunos días de uso.';
   String get enableUsageStatsPermission =>
       isEnglish
-          ? 'Enable the “Usage statistics” permission to record daily minutes and fill this chart.'
-          : 'Activa el permiso de “Uso de apps” para registrar minutos diarios y llenar esta gráfica.';
+          ? 'Enable the "Usage statistics" permission to record daily minutes and fill this chart.'
+          : 'Activa el permiso de "Uso de apps" para registrar minutos diarios y llenar esta gráfica.';
   String get goToSettings => isEnglish ? 'Go to settings' : 'Ir a ajustes';
   String get usageByApp => isEnglish ? 'Usage by app' : 'Uso por app';
   String get blockedAttempts =>
@@ -327,35 +328,35 @@ class AppStrings {
       isEnglish ? 'Enable: Overlay windows' : 'Activar: Superponer ventanas';
   String get onboardingCreatePin => isEnglish ? 'Create PIN' : 'Crear PIN';
   String get onboardingSlide1Title =>
-      isEnglish ? 'Block distractions' : 'Bloquea las distracciones';
+      isEnglish ? 'You scroll more than you think' : 'Scrolleás más de lo que creés';
   String get onboardingSlide1Body =>
       isEnglish
-          ? 'Turn on the VPN shield and you will no longer access sites that pull you away from your goals. Digital silence, full attention.'
-          : 'Activa el escudo VPN y nunca más accederás a sitios que te alejan de tus metas. Silencio digital, atención plena.';
+          ? 'The average person spends 3h/day on distracting apps. That\'s 45 days a year — gone. Safocus shows you the real cost.'
+          : 'La persona promedio gasta 3h/día en apps que la distraen. Eso son 45 días al año — idos. Safocus te muestra el costo real.';
   String get onboardingSlide2Title =>
-      isEnglish ? 'Control app time' : 'Controla el tiempo en apps';
+      isEnglish ? 'Who do you want to be?' : '¿Quién querés ser?';
   String get onboardingSlide2Body =>
       isEnglish
-          ? 'Set daily limits for Instagram, TikTok, and any app that consumes your time. Regain control of your day.'
-          : 'Establece límites diarios en Instagram, TikTok y cualquier app que consuma tu tiempo. Recupera el control de tu jornada.';
+          ? 'Someone who studies with full focus. Works out consistently. Creates without distraction. Sleeps without doomscrolling. Safocus gives you the proof you\'re getting there.'
+          : 'Alguien que estudia con foco total. Entrena seguido. Crea sin distracciones. Duerme sin doomscrolling. Safocus te da la prueba de que lo estás logrando.';
   String get onboardingSlide3Title =>
-      isEnglish ? 'Build the focus habit' : 'Construye el hábito del enfoque';
+      isEnglish ? 'Your Lock-In Score' : 'Tu Lock-In Score';
   String get onboardingSlide3Body =>
       isEnglish
-          ? 'Motivational reminders, streaks, and a daily focus score keep you on the right path.'
-          : 'Recordatorios motivacionales, racha de días y un puntaje de enfoque diario te mantienen en el camino correcto.';
+          ? 'Built day by day. VPN shield on, limits respected, streak growing — every action raises your score. Share it when you\'re proud.'
+          : 'Se construye día a día. Escudo VPN activo, límites respetados, racha creciendo — cada acción sube tu score. Compartilo cuando estés orgulloso.';
   String get onboardingSlide4Title =>
-      isEnglish ? 'Protect yourself with a PIN' : 'Protégete con un PIN';
+      isEnglish ? 'Lock your setup' : 'Bloquea tu setup';
   String get onboardingSlide4Body =>
       isEnglish
-          ? 'Set a security PIN to protect your limits and settings. Only destructive actions will require it. Recommended.'
-          : 'Configura un PIN de seguridad para proteger tus límites y ajustes. Solo acciones destructivas lo requieren. Es recomendado.';
+          ? 'Set a PIN so you can\'t undo your progress in a weak moment. Only destructive actions will ask for it.'
+          : 'Poné un PIN para que no puedas deshacer tu progreso en un momento débil. Solo acciones destructivas lo pedirán.';
   String get onboardingSlide5Title =>
-      isEnglish ? 'Real app blocking' : 'Bloqueo real de apps';
+      isEnglish ? 'Activate the shield' : 'Activá el escudo';
   String get onboardingSlide5Body =>
       isEnglish
-          ? 'To block apps when they reach their limit, SaFocus needs “Usage statistics” and “Overlay windows” permissions. It only takes 30 seconds to enable them.'
-          : 'Para bloquear apps al alcanzar el límite, SaFocus necesita permiso de "Uso de apps" y "Superponer ventanas". Solo tardas 30 segundos en activarlos.';
+          ? 'To block apps when they reach their limit, Safocus needs Usage statistics and Overlay permissions. Takes 30 seconds.'
+          : 'Para bloquear apps cuando alcanzan el límite, Safocus necesita permiso de Uso de apps y Superponer ventanas. Son 30 segundos.';
   String get onboardingUsagePermissionFallback =>
       isEnglish
           ? 'Go to Settings → Privacy → Usage statistics and enable SaFocus.'
@@ -373,14 +374,14 @@ class AppStrings {
       isEnglish ? 'Error saving PIN' : 'Error al guardar el PIN';
 
   String get focusScoreExcellent =>
-      isEnglish ? 'Excellent' : 'Excelente';
+      isEnglish ? 'Locked in 🔒' : 'Locked in 🔒';
   String get focusScoreVeryGood =>
-      isEnglish ? 'Very good' : 'Muy bien';
+      isEnglish ? 'On track' : 'En racha';
   String get focusScoreRegular =>
-      isEnglish ? 'Regular' : 'Regular';
+      isEnglish ? 'Building momentum' : 'Tomando impulso';
   String get focusScoreImproving =>
-      isEnglish ? 'Could improve' : 'Mejorable';
-  String get focusScoreLow => isEnglish ? 'Low' : 'Bajo';
+      isEnglish ? 'Comeback mode' : 'Modo comeback';
+  String get focusScoreLow => isEnglish ? 'Time to lock in' : 'Hora de locked in';
 
   String focusScoreLabel(int score) {
     if (score >= 90) return focusScoreExcellent;
@@ -477,4 +478,46 @@ class AppStrings {
 
   String countLabel(int value, {String unit = ''}) =>
       unit.isEmpty ? '$value' : '$value $unit';
+
+  String get limitReachedTitle => isEnglish ? 'Comeback time. 💪' : 'Va de nuevo. 💪';
+  String limitReachedBody(String appName) =>
+      isEnglish
+          ? 'You hit your limit on $appName. Your future self will thank you.'
+          : 'Llegaste al límite de $appName. Tu yo del futuro te lo va a agradecer.';
+  String get limitWarningTitle => isEnglish ? 'Heads up ⏰' : 'Ojo ⏰';
+  String limitWarningBody(String appName, int minutes) =>
+      isEnglish
+          ? 'Eh… $minutes min left on $appName. Sure about this?'
+          : 'Eh… $minutes min restantes en $appName. ¿Seguro/a?';
+  String get weekSummaryTitle => isEnglish ? 'Your week locked in 🔥' : 'Tu semana locked in 🔥';
+
+  // ── Focus Duo ──────────────────────────────────────────────────────────────
+  String get focusDuo => isEnglish ? 'Focus Duo' : 'Focus Duo';
+  String get focusDuoSubtitle =>
+      isEnglish
+          ? 'Lock in together. Neither of you quits.'
+          : 'Locked in juntos. Ninguno se rinde.';
+  String get myInviteCode => isEnglish ? 'My invite code' : 'Mi código de invitación';
+  String get enterPartnerCode =>
+      isEnglish ? 'Enter your partner\'s code' : 'Ingresá el código de tu duo';
+  String get startDuo => isEnglish ? 'Start duo' : 'Empezar duo';
+  String get joinDuo => isEnglish ? 'Join duo' : 'Unirme al duo';
+  String get duoStreak => isEnglish ? 'Duo streak' : 'Racha del duo';
+  String get lockedInToday => isEnglish ? 'Locked in today ✅' : 'Locked in hoy ✅';
+  String get notYetToday => isEnglish ? 'Mark today as locked in' : 'Marcar hoy como locked in';
+  String get duoActive => isEnglish ? 'Duo active 🔥' : 'Duo activo 🔥';
+  String get noDuoYet => isEnglish ? 'No duo yet' : 'Sin duo aún';
+  String get partnerName => isEnglish ? 'Partner name (optional)' : 'Nombre de tu duo (opcional)';
+  String get leaveDuo => isEnglish ? 'Leave duo' : 'Salir del duo';
+  String get leaveDuoConfirm =>
+      isEnglish
+          ? 'Leave this duo? The shared streak will reset.'
+          : '¿Salir del duo? La racha compartida se reiniciará.';
+  String get copiedToClipboard =>
+      isEnglish ? 'Code copied!' : '¡Código copiado!';
+  String get codePlaceholder => isEnglish ? 'e.g. ABC-123' : 'ej. ABC-123';
+  String duoStreakLabel(int days) =>
+      isEnglish
+          ? '$days ${days == 1 ? "day" : "days"} locked in together'
+          : '$days ${days == 1 ? "día" : "días"} locked in juntos';
 }
