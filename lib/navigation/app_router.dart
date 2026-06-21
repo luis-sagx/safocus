@@ -6,6 +6,8 @@ import '../features/app_limits/screens/category_detail_screen.dart';
 import '../features/blocking/screens/blocking_screen.dart';
 import '../features/focus_duo/screens/duo_screen.dart';
 import '../features/home/screens/home_screen.dart';
+import '../features/legal/screens/privacy_policy_screen.dart';
+import '../features/legal/screens/terms_of_service_screen.dart';
 import '../features/notifications/screens/notifications_screen.dart';
 import '../features/onboarding/screens/onboarding_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
@@ -25,6 +27,8 @@ abstract class AppRoutes {
   static const String categoryDetail = '/app-limits/category';
   static const String lockInCard = '/lock-in-card';
   static const String focusDuo = '/focus-duo';
+  static const String privacyPolicy = '/privacy-policy';
+  static const String termsOfService = '/terms-of-service';
 }
 
 final _rootKey = GlobalKey<NavigatorState>();
@@ -92,6 +96,16 @@ GoRouter buildRouter({required bool showOnboarding}) {
         builder: (_, state) => CategoryDetailScreen(
           categoryId: state.pathParameters['categoryId']!,
         ),
+      ),
+
+      // ── Legal screens (full-screen, no bottom nav) ─────────────────────
+      GoRoute(
+        path: AppRoutes.privacyPolicy,
+        builder: (_, __) => const PrivacyPolicyScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.termsOfService,
+        builder: (_, __) => const TermsOfServiceScreen(),
       ),
     ],
   );

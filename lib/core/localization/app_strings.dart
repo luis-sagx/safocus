@@ -520,4 +520,10 @@ class AppStrings {
       isEnglish
           ? '$days ${days == 1 ? "day" : "days"} locked in together'
           : '$days ${days == 1 ? "día" : "días"} locked in juntos';
+
+  // ── Legal ─────────────────────────────────────────────────────────────────
+  String get privacyPolicy => isEnglish ? 'Privacy Policy' : 'Política de privacidad';
+  String get termsOfService => isEnglish ? 'Terms of Service' : 'Términos de servicio';
+  String get legalSection => isEnglish ? 'Legal' : 'Legal';
+  String get lastUpdated => isEnglish ? 'Last updated: June 2026' : 'Última actualización: junio 2026';
 }

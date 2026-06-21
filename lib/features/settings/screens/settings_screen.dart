@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -8,6 +9,7 @@ import '../../../core/localization/app_strings.dart';
 import '../../app_limits/providers/app_limits_provider.dart';
 // auth_service removed — biometric option UI removed from settings
 import '../providers/settings_provider.dart';
+import '../../../navigation/app_router.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -133,6 +135,26 @@ class SettingsScreen extends ConsumerWidget {
                   subtitle: strings.resetAllDataSubtitle,
                   iconColor: AppColors.error,
                   onTap: () => _showResetConfirmDialog(context, ref, notifier),
+                ),
+              ],
+            ),
+
+            const SliverPadding(padding: EdgeInsets.only(top: 16)),
+
+            // ── Legal ─────────────────────────────────────────────────
+            _section(
+              context,
+              title: strings.legalSection,
+              children: [
+                _SettingsTile(
+                  icon: PhosphorIconsRegular.shieldCheck,
+                  label: strings.privacyPolicy,
+                  onTap: () => context.push(AppRoutes.privacyPolicy),
+                ),
+                _SettingsTile(
+                  icon: PhosphorIconsRegular.fileText,
+                  label: strings.termsOfService,
+                  onTap: () => context.push(AppRoutes.termsOfService),
                 ),
               ],
             ),
