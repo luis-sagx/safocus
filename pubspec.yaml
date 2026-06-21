@@ -57,6 +57,13 @@ dependencies:
   # Intl
   intl: ^0.20.0
 
+  # Screenshot for Lock-In Card export
+  screenshot: ^3.0.0
+  # Share Plus for sharing the card image
+  share_plus: ^10.0.0
+  # Path provider for temp file storage
+  path_provider: ^2.1.0
+
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
