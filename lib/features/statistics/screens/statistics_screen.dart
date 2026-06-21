@@ -53,20 +53,22 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          strings.statisticsTitle,
-                          style: AppTypography.displayMedium,
-                        ),
-                        Text(
-                          strings.last7Days,
-                          style: AppTypography.bodyMedium.copyWith(
-                            color: AppColors.textSecondary,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            strings.statisticsTitle,
+                            style: AppTypography.displayMedium,
                           ),
-                        ),
-                      ],
+                          Text(
+                            strings.last7Days,
+                            style: AppTypography.bodyMedium.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     IconButton(
                       icon: const Icon(

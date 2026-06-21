@@ -368,13 +368,15 @@ class _MetricCard extends StatelessWidget {
             child: Icon(icon, color: accent, size: 20),
           ),
           const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: AppTypography.labelMedium),
-              const SizedBox(height: 2),
-              Text(value, style: AppTypography.headlineSmall),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: AppTypography.labelMedium, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 2),
+                Text(value, style: AppTypography.headlineSmall, overflow: TextOverflow.ellipsis),
+              ],
+            ),
           ),
         ],
       ),

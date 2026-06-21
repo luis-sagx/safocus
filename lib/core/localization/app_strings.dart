@@ -19,7 +19,7 @@ class AppStrings {
 
   String get today => isEnglish ? 'Today' : 'Hoy';
   String get yesterday => isEnglish ? 'Yesterday' : 'Ayer';
-  String get settings => isEnglish ? 'Settings' : 'Configuración';
+  String get settings => isEnglish ? 'Settings' : 'Ajustes';
   String get appearance => isEnglish ? 'Appearance' : 'Apariencia';
   String get security => isEnglish ? 'Security' : 'Seguridad';
   String get data => isEnglish ? 'Data' : 'Datos';
@@ -88,8 +88,8 @@ class AppStrings {
   String get activate => isEnglish ? 'Activate' : 'Activar';
 
   String get home => isEnglish ? 'Home' : 'Inicio';
-  String get blocking => isEnglish ? 'Lock In' : 'Lock In';
-  String get statistics => isEnglish ? 'Stats' : 'Stats';
+  String get blocking => isEnglish ? 'Lock In' : 'Escudo';
+  String get statistics => isEnglish ? 'Stats' : 'Métricas';
   String get limits => isEnglish ? 'Limits' : 'Límites';
 
   String get focusScore => isEnglish ? 'Lock-In Score' : 'Lock-In Score';
@@ -170,7 +170,7 @@ class AppStrings {
           : 'No se pudo activar el VPN. Verifica los permisos.';
   String get mySites => isEnglish ? 'My sites' : 'Mis sitios';
   String get predefined => isEnglish ? 'Predefined' : 'Predefinidos';
-  String get shieldActive => isEnglish ? 'Locked In 🔒' : 'Locked In 🔒';
+  String get shieldActive => isEnglish ? 'Locked In' : 'Locked In';
   String get shieldInactive =>
       isEnglish ? 'Lock In off' : 'Lock In apagado';
   String customSitesCount(int count) =>
@@ -255,7 +255,7 @@ class AppStrings {
   String get statisticsTitle => isEnglish ? 'Your week locked in' : 'Tu semana locked in';
   String get last7Days => isEnglish ? 'Last 7 days' : 'Últimos 7 días';
   String get todayScore => isEnglish ? 'Lock-In Score' : 'Lock-In Score';
-  String get streak => isEnglish ? 'Days locked in' : 'Días locked in';
+  String get streak => isEnglish ? 'Streak 🔥' : 'Racha 🔥';
   String dayWord(int days) =>
       isEnglish ? (days == 1 ? 'day' : 'days') : (days == 1 ? 'día' : 'días');
   String get dailyUsageMinutes =>
@@ -374,7 +374,7 @@ class AppStrings {
       isEnglish ? 'Error saving PIN' : 'Error al guardar el PIN';
 
   String get focusScoreExcellent =>
-      isEnglish ? 'Locked in 🔒' : 'Locked in 🔒';
+      isEnglish ? 'Locked in' : 'Locked in';
   String get focusScoreVeryGood =>
       isEnglish ? 'On track' : 'En racha';
   String get focusScoreRegular =>
