@@ -63,8 +63,31 @@ class CategoriesNotifier extends StateNotifier<CategoriesState> {
     _load();
   }
 
+  /// Updates a category and propagates its [dailyLimitMinutes] to the
+  /// effectiveLimitMinutes of every app assigned to it.
+  ///
+  /// Without this propagation the apps keep their old limit, so lowering a
+  /// category limit (e.g. 60 → 30) would still report the old remaining time
+  /// and block too late.
   Future<void> updateCategory(AppCategory category) async {
     await LocalStorage.instance.upsertAppCategory(category);
+
+    final limits = LocalStorage.instance.getAppLimits();
+    final affected = limits.any(
+      (l) =>
+          l.categoryId == category.id &&
+          l.effectiveLimitMinutes != category.dailyLimitMinutes,
+    );
+    if (affected) {
+      final updated = limits.map((l) {
+        if (l.categoryId == category.id) {
+          return l.copyWith(effectiveLimitMinutes: category.dailyLimitMinutes);
+        }
+        return l;
+      }).toList();
+      await LocalStorage.instance.saveAppLimits(updated);
+    }
+
     _load();
   }
 

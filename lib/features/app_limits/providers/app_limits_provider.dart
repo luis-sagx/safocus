@@ -227,8 +227,10 @@ class AppLimitsNotifier extends StateNotifier<AppLimitsState> {
         );
       }
 
-      // Push exceeded list to native so UsageMonitorService blocks them.
+      // Push exceeded list + full limited set to native so UsageMonitorService
+      // blocks in real time using the current category limits.
       await _syncBlockStateToNative(current);
+      await _syncAllLimitedToNative(current);
     } on PlatformException catch (_) {
       // Not on Android or permission revoked — use stored values.
     }
@@ -290,6 +292,44 @@ class AppLimitsNotifier extends StateNotifier<AppLimitsState> {
     } catch (_) {}
   }
 
+  /// Pushes the FULL set of active limited apps (not only exceeded) to native
+  /// SharedPreferences so [UsageMonitorService] can compute real-time usage and
+  /// block the instant a category limit is reached — without waiting for the
+  /// next Flutter refresh (Bug 4) and using the up-to-date category limit (Bug 2).
+  ///
+  /// For each app we send its [categoryId] and the category's current
+  /// dailyLimitMinutes so the native side aggregates usage per category.
+  Future<void> _syncAllLimitedToNative(List<AppLimit> limits) async {
+    try {
+      final categories = LocalStorage.instance.getAppCategories(seed: false);
+      final catLimitById = {for (final c in categories) c.id: c.dailyLimitMinutes};
+
+      final apps = limits
+          .where((l) => l.isActive)
+          .map((l) {
+            final catId = l.categoryId;
+            final hasCat = catId != null && catId.isNotEmpty;
+            return <String, dynamic>{
+              'packageName': l.packageName,
+              'appName': l.appName,
+              'limitMinutes': l.effectiveLimitMinutes,
+              if (hasCat) 'categoryId': catId,
+              if (hasCat) 'categoryLimitMinutes': catLimitById[catId] ?? 0,
+            };
+          })
+          .toList();
+
+      await _blockChannel.invokeMethod('syncAllLimitedApps', {'apps': apps});
+    } catch (_) {}
+  }
+
+  /// Pushes both the exceeded set and the full limited set to native. Call after
+  /// any change to limits or category limits so the native monitor stays in sync.
+  Future<void> _pushNativeState() async {
+    await _syncBlockStateToNative(state.limits);
+    await _syncAllLimitedToNative(state.limits);
+  }
+
   // ── CRUD ─────────────────────────────────────────────────────────────────
 
   Future<void> addLimit({
@@ -310,17 +350,19 @@ class AppLimitsNotifier extends StateNotifier<AppLimitsState> {
     _load();
     // Immediately sync with native and refresh usage so the UI updates.
     await _refreshUsageStats();
-    await _syncBlockStateToNative(state.limits);
+    await _pushNativeState();
   }
 
   Future<void> updateLimit(AppLimit limit) async {
     await LocalStorage.instance.upsertAppLimit(limit);
     _load();
+    await _pushNativeState();
   }
 
   Future<void> deleteLimit(String id) async {
     await LocalStorage.instance.deleteAppLimit(id);
     _load();
+    await _pushNativeState();
   }
 
   Future<void> toggleLimit(AppLimit limit) async {
@@ -328,6 +370,14 @@ class AppLimitsNotifier extends StateNotifier<AppLimitsState> {
       limit.copyWith(isActive: !limit.isActive),
     );
     _load();
+    await _pushNativeState();
+  }
+
+  /// Re-reads limits from storage and re-pushes native state. Called after a
+  /// category limit changes so apps' effectiveLimitMinutes propagate to native.
+  Future<void> reloadAndSync() async {
+    _load();
+    await _pushNativeState();
   }
 
   // ── 3.6: Emergency extension — category-level ────────────────────────────
@@ -355,7 +405,7 @@ class AppLimitsNotifier extends StateNotifier<AppLimitsState> {
       );
       await LocalStorage.instance.upsertAppLimit(extended);
       _load();
-      await _syncBlockStateToNative(state.limits);
+      await _pushNativeState();
       return true;
     }
 
@@ -386,7 +436,7 @@ class AppLimitsNotifier extends StateNotifier<AppLimitsState> {
 
     await LocalStorage.instance.saveAppLimits(newLimits);
     _load();
-    await _syncBlockStateToNative(state.limits);
+    await _pushNativeState();
     return true;
   }
 

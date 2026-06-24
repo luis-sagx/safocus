@@ -161,6 +161,18 @@ class MainActivity : FlutterActivity() {
                         val limited = apps.map { it["packageName"] as String }.toSet()
                         val edit = prefs.edit()
                             .putStringSet(UsageMonitorService.KEY_ALL_LIMITED, limited)
+
+                        // Remove stale per-package keys for apps that are no longer
+                        // limited, so the monitor never blocks a removed app.
+                        prefs.all.keys
+                            .filter {
+                                it.startsWith("limitmins_") || it.startsWith("catid_")
+                            }
+                            .forEach { key ->
+                                val pkg = key.substringAfter('_')
+                                if (pkg !in limited) edit.remove(key)
+                            }
+
                         for (app in apps) {
                             val pkg = app["packageName"] as String
                             edit.putString("appname_$pkg", app["appName"] as? String ?: pkg)
@@ -168,13 +180,15 @@ class MainActivity : FlutterActivity() {
                             // Category-aware sync (ALC-011): store categoryId per package
                             // and the category-level daily limit so UsageMonitorService
                             // can aggregate usage across all apps in the same category.
+                            // Always write the category limit (even on decrease) so the
+                            // monitor blocks using the up-to-date value (Bug 2).
                             val catId = app["categoryId"] as? String
                             if (!catId.isNullOrEmpty()) {
                                 edit.putString("catid_$pkg", catId)
-                                val catLimit = app["categoryLimitMinutes"] as? Int
-                                if (catLimit != null && catLimit > 0) {
-                                    edit.putInt("catlimit_$catId", catLimit)
-                                }
+                                val catLimit = (app["categoryLimitMinutes"] as? Int) ?: 0
+                                edit.putInt("catlimit_$catId", catLimit)
+                            } else {
+                                edit.remove("catid_$pkg")
                             }
                         }
                         edit.apply()

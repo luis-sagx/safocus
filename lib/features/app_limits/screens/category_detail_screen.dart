@@ -252,8 +252,13 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
                 label: Text(strings.presetLabel(value)),
                 selected: selected,
                 selectedColor: AppColors.primary.withOpacity(0.25),
-                onSelected: (_) => catsNotifier.updateCategory(
-                  cat.copyWith(dailyLimitMinutes: value)),
+                onSelected: (_) async {
+                  await catsNotifier.updateCategory(
+                      cat.copyWith(dailyLimitMinutes: value));
+                  // Propagate the new category limit to the apps' state and
+                  // re-sync the native monitor so blocking uses the new value.
+                  await limitsNotifier.reloadAndSync();
+                },
                 labelStyle: AppTypography.labelMedium.copyWith(
                   color: selected ? AppColors.primary : AppColors.textPrimary),
               );
