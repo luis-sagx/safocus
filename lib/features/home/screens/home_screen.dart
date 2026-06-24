@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/localization/app_strings.dart';
 import '../../../core/utils/date_utils.dart';
@@ -26,7 +27,7 @@ class HomeScreen extends ConsumerWidget {
     final now = DateTime.now();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -52,16 +53,16 @@ class HomeScreen extends ConsumerWidget {
                         Text(
                           now.dayLabel(context),
                           style: AppTypography.bodyMedium.copyWith(
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                           ),
                         ),
                       ],
                     ),
                     IconButton(
                       onPressed: () => context.go(AppRoutes.settings),
-                      icon: const Icon(
+                      icon: Icon(
                         PhosphorIconsRegular.gear,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                         size: 24,
                       ),
                     ),
@@ -111,7 +112,7 @@ class HomeScreen extends ConsumerWidget {
                         accent:
                             blocking.vpnActive
                                 ? AppColors.secondary
-                                : AppColors.textSecondary,
+                                : context.colors.textSecondary,
                         onTap: () => context.go(AppRoutes.blocking),
                       ),
                     ),
@@ -245,7 +246,7 @@ class _FocusScoreCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: color.withOpacity(0.3), width: 1),
       ),
@@ -260,7 +261,7 @@ class _FocusScoreCard extends StatelessWidget {
                 CircularProgressIndicator(
                   value: score / 100,
                   strokeWidth: 6,
-                  backgroundColor: AppColors.surfaceVariant,
+                  backgroundColor: context.colors.surfaceVariant,
                   valueColor: AlwaysStoppedAnimation<Color>(color),
                 ),
                 Text(
@@ -316,7 +317,7 @@ class _StatusCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.colors.surface,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -354,7 +355,7 @@ class _MetricCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -403,7 +404,7 @@ class _AppLimitRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -426,7 +427,7 @@ class _AppLimitRow extends StatelessWidget {
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: progress,
-              backgroundColor: AppColors.surfaceVariant,
+              backgroundColor: context.colors.surfaceVariant,
               valueColor: AlwaysStoppedAnimation<Color>(color),
               minHeight: 6,
             ),
@@ -446,15 +447,15 @@ class _EmptyLimits extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border, style: BorderStyle.solid),
+        border: Border.all(color: context.colors.border, style: BorderStyle.solid),
       ),
       child: Column(
         children: [
-          const Icon(
+          Icon(
             PhosphorIconsRegular.clockCountdown,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
             size: 36,
           ),
           const SizedBox(height: 12),
@@ -463,7 +464,7 @@ class _EmptyLimits extends StatelessWidget {
           Text(
             AppStrings.of(context).addUsageLimitsSubtitle,
             style: AppTypography.bodySmall.copyWith(
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
             textAlign: TextAlign.center,
           ),
@@ -515,7 +516,7 @@ class _PermissionBanner extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 6),
-          Text(strings.missingPermissionsBanner, style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary)),
+          Text(strings.missingPermissionsBanner, style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary)),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -587,12 +588,12 @@ class _DuoBanner extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.colors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: duo != null
                 ? AppColors.warning.withOpacity(0.4)
-                : AppColors.border,
+                : context.colors.border,
           ),
         ),
         child: Row(
@@ -620,15 +621,15 @@ class _DuoBanner extends ConsumerWidget {
                         ? strings.duoStreakLabel(duo.sharedStreakDays)
                         : strings.focusDuoSubtitle,
                     style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               PhosphorIconsRegular.arrowRight,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               size: 18,
             ),
           ],

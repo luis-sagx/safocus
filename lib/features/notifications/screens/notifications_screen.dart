@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../core/localization/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../data/models/motivational_phrase.dart';
 import '../providers/notifications_provider.dart';
@@ -17,7 +18,7 @@ class NotificationsScreen extends ConsumerWidget {
     final notifier = ref.read(notificationsProvider.notifier);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -32,7 +33,7 @@ class NotificationsScreen extends ConsumerWidget {
                     Text(
                       strings.phrasesReminder,
                       style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -142,7 +143,7 @@ class _SettingsCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
@@ -173,7 +174,7 @@ class _SettingsCard extends StatelessWidget {
           ),
           if (enabled) ...[
             const SizedBox(height: 16),
-            const Divider(color: AppColors.divider),
+            Divider(color: context.colors.divider),
             const SizedBox(height: 16),
             Text(strings.frequency, style: AppTypography.headlineSmall),
             const SizedBox(height: 10),
@@ -187,7 +188,7 @@ class _SettingsCard extends StatelessWidget {
                   selectedColor: AppColors.primary.withOpacity(0.2),
                   onSelected: (_) => onIntervalChange(h),
                   labelStyle: AppTypography.labelMedium.copyWith(
-                    color: selected ? AppColors.primary : AppColors.textPrimary,
+                    color: selected ? AppColors.primary : context.colors.textPrimary,
                   ),
                 );
               }).toList(),
@@ -216,9 +217,9 @@ class _PhraseTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(14),
-        border: phrase.isActive ? null : Border.all(color: AppColors.border),
+        border: phrase.isActive ? null : Border.all(color: context.colors.border),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,8 +243,8 @@ class _PhraseTile extends StatelessWidget {
               phrase.text,
               style: AppTypography.bodyMedium.copyWith(
                 color: phrase.isActive
-                    ? AppColors.textPrimary
-                    : AppColors.textDisabled,
+                    ? context.colors.textPrimary
+                    : context.colors.textDisabled,
               ),
             ),
           ),

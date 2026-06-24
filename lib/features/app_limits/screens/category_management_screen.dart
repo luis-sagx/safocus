@@ -5,6 +5,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/localization/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../data/models/app_category.dart';
@@ -66,9 +67,9 @@ class CategoryManagementScreen extends ConsumerWidget {
     final regularCats = state.categories.where((c) => c.id != uncat?.id).toList();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: context.colors.background,
         title: Text(strings.manageCategories, style: AppTypography.headlineMedium),
       ),
       body: state.categories.isEmpty
@@ -99,13 +100,13 @@ class CategoryManagementScreen extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceVariant.withOpacity(0.4),
+                      color: context.colors.surfaceVariant.withOpacity(0.4),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       strings.uncategorized,
                       style: AppTypography.labelSmall.copyWith(
-                        color: AppColors.textDisabled,
+                        color: context.colors.textDisabled,
                       ),
                     ),
                   ),
@@ -123,9 +124,9 @@ class CategoryManagementScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showCreateDialog(context, notifier, strings),
         backgroundColor: AppColors.primary,
-        child: const Icon(
+        child: Icon(
           PhosphorIconsRegular.plus,
-          color: AppColors.textPrimary,
+          color: context.colors.textPrimary,
         ),
       ),
     );
@@ -154,7 +155,7 @@ class _CategoryTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Material(
-        color: AppColors.surface,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
@@ -275,7 +276,7 @@ class _EmptyCategoriesState extends StatelessWidget {
             Text(
               strings.addCategorySubtitle,
               style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -368,7 +369,7 @@ Future<void> _showCategoryForm({
       return StatefulBuilder(
         builder: (context, setDialogState) {
           return AlertDialog(
-            backgroundColor: AppColors.surface,
+            backgroundColor: context.colors.surface,
             title: Text(title, style: AppTypography.headlineSmall),
             content: SingleChildScrollView(
               child: Column(
@@ -388,7 +389,7 @@ Future<void> _showCategoryForm({
                         width: 64,
                         height: 64,
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceVariant,
+                          color: context.colors.surfaceVariant,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Center(
@@ -431,7 +432,7 @@ Future<void> _showCategoryForm({
                             ),
                             shape: BoxShape.circle,
                             border: selected
-                                ? Border.all(color: AppColors.textPrimary, width: 2)
+                                ? Border.all(color: context.colors.textPrimary, width: 2)
                                 : null,
                           ),
                         ),
@@ -456,7 +457,7 @@ Future<void> _showCategoryForm({
                             labelStyle: AppTypography.labelMedium.copyWith(
                               color: selected
                                   ? AppColors.primary
-                                  : AppColors.textPrimary,
+                                  : context.colors.textPrimary,
                             ),
                           );
                         }).toList(),
@@ -504,7 +505,7 @@ Future<String?> _showIconPicker(BuildContext context, String? current) async {
       return StatefulBuilder(
         builder: (context, setDialogState) {
           return AlertDialog(
-            backgroundColor: AppColors.surface,
+            backgroundColor: context.colors.surface,
             title: Text(
               AppStrings.of(context).chooseEmoji,
               style: AppTypography.headlineSmall,
@@ -525,7 +526,7 @@ Future<String?> _showIconPicker(BuildContext context, String? current) async {
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? AppColors.primary.withOpacity(0.2)
-                                : AppColors.surfaceVariant,
+                                : context.colors.surfaceVariant,
                             borderRadius: BorderRadius.circular(10),
                             border: isSelected
                                 ? Border.all(color: AppColors.primary, width: 2)
@@ -537,7 +538,7 @@ Future<String?> _showIconPicker(BuildContext context, String? current) async {
                               size: 24,
                               color: isSelected
                                   ? AppColors.primary
-                                  : AppColors.textSecondary,
+                                  : context.colors.textSecondary,
                             ),
                           ),
                         ),

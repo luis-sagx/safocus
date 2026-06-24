@@ -11,7 +11,6 @@ abstract class AppTypography {
     fontFamily: _headingFont,
     fontSize: 32,
     fontWeight: FontWeight.w700,
-    color: AppColors.textPrimary,
     height: 1.2,
   );
 
@@ -19,7 +18,6 @@ abstract class AppTypography {
     fontFamily: _headingFont,
     fontSize: 26,
     fontWeight: FontWeight.w700,
-    color: AppColors.textPrimary,
     height: 1.25,
   );
 
@@ -28,7 +26,6 @@ abstract class AppTypography {
     fontFamily: _headingFont,
     fontSize: 22,
     fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
     height: 1.3,
   );
 
@@ -36,7 +33,6 @@ abstract class AppTypography {
     fontFamily: _headingFont,
     fontSize: 18,
     fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
     height: 1.35,
   );
 
@@ -44,7 +40,6 @@ abstract class AppTypography {
     fontFamily: _headingFont,
     fontSize: 16,
     fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
     height: 1.4,
   );
 
@@ -53,7 +48,6 @@ abstract class AppTypography {
     fontFamily: _bodyFont,
     fontSize: 16,
     fontWeight: FontWeight.w400,
-    color: AppColors.textPrimary,
     height: 1.5,
   );
 
@@ -61,7 +55,6 @@ abstract class AppTypography {
     fontFamily: _bodyFont,
     fontSize: 14,
     fontWeight: FontWeight.w400,
-    color: AppColors.textPrimary,
     height: 1.5,
   );
 
@@ -78,7 +71,6 @@ abstract class AppTypography {
     fontFamily: _bodyFont,
     fontSize: 14,
     fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
     letterSpacing: 0.3,
   );
 

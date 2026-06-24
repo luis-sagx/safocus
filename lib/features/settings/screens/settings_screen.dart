@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/localization/app_strings.dart';
 import '../../app_limits/providers/app_limits_provider.dart';
@@ -21,7 +22,7 @@ class SettingsScreen extends ConsumerWidget {
     final notifier = ref.read(settingsProvider.notifier);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -49,12 +50,21 @@ class SettingsScreen extends ConsumerWidget {
                   trailing: DropdownButtonHideUnderline(
                     child: DropdownButton<AppThemeMode>(
                       value: settings.themeMode,
-                      dropdownColor: AppColors.surfaceVariant,
-                      style: AppTypography.bodyMedium,
+                      dropdownColor: context.colors.surfaceVariant,
+                      style: AppTypography.bodyMedium.copyWith(
+                          color: context.colors.textPrimary),
                       items: [
                         DropdownMenuItem(
                           value: AppThemeMode.dark,
                           child: Text(strings.darkTheme),
+                        ),
+                        DropdownMenuItem(
+                          value: AppThemeMode.light,
+                          child: Text(strings.lightTheme),
+                        ),
+                        DropdownMenuItem(
+                          value: AppThemeMode.system,
+                          child: Text(strings.systemTheme),
                         ),
                       ],
                       onChanged: (v) {
@@ -69,7 +79,7 @@ class SettingsScreen extends ConsumerWidget {
                   trailing: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       value: settings.language,
-                      dropdownColor: AppColors.surfaceVariant,
+                      dropdownColor: context.colors.surfaceVariant,
                       style: AppTypography.bodyMedium,
                       items: [
                         DropdownMenuItem(
@@ -199,7 +209,7 @@ Widget _buildSection(
           ),
           Container(
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: context.colors.surface,
               borderRadius: BorderRadius.circular(18),
             ),
             child: Column(
@@ -210,8 +220,8 @@ Widget _buildSection(
                       children: [
                         e.value,
                         if (!isLast)
-                          const Divider(
-                            color: AppColors.divider,
+                          Divider(
+                            color: context.colors.divider,
                             height: 1,
                             indent: 16,
                             endIndent: 16,
@@ -287,7 +297,7 @@ class _PinSetupDialogState extends State<_PinSetupDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.colors.surface,
       scrollable: true,
       title: Row(
         children: [
@@ -419,9 +429,9 @@ class _SettingsTile extends StatelessWidget {
       trailing:
           trailing ??
           (onTap != null
-              ? const Icon(
+              ? Icon(
                 PhosphorIconsRegular.caretRight,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 size: 16,
               )
               : null),

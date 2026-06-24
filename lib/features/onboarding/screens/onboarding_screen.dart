@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/localization/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../features/auth/services/auth_service.dart';
 import '../../../features/settings/providers/settings_provider.dart';
@@ -153,7 +154,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final strings = AppStrings.of(context);
     final slides = _slides(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.colors.background,
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Column(
@@ -176,7 +177,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: Text(
                       strings.onboardingSkip,
                       style: AppTypography.labelLarge.copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ),
@@ -227,7 +228,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           color:
                               active
                                   ? slides[_page].accent
-                                  : AppColors.surfaceVariant,
+                                  : context.colors.surfaceVariant,
                           borderRadius: BorderRadius.circular(4),
                         ),
                       );
@@ -425,7 +426,7 @@ class _SlidePage extends StatelessWidget {
           Text(
             bodyText,
             style: AppTypography.bodyLarge.copyWith(
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
             textAlign: TextAlign.center,
           ),
@@ -527,17 +528,17 @@ class _IdentityChip extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
-          color: selected ? accent.withOpacity(0.15) : AppColors.surface,
+          color: selected ? accent.withOpacity(0.15) : context.colors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: selected ? accent : AppColors.surfaceVariant,
+            color: selected ? accent : context.colors.surfaceVariant,
             width: selected ? 2 : 1,
           ),
         ),
         child: Text(
           label,
           style: AppTypography.labelLarge.copyWith(
-            color: selected ? accent : AppColors.textSecondary,
+            color: selected ? accent : context.colors.textSecondary,
           ),
         ),
       ),
@@ -590,7 +591,7 @@ class _PinSetupDialogState extends State<_PinSetupDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.colors.surface,
       scrollable: true,
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),

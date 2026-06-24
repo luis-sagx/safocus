@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/localization/app_strings.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../widgets/legal_section.dart';
 
@@ -14,11 +14,11 @@ class PrivacyPolicyScreen extends StatelessWidget {
     final isEn = strings.isEnglish;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: context.colors.background,
         elevation: 0,
-        foregroundColor: AppColors.textPrimary,
+        foregroundColor: context.colors.textPrimary,
         title: Text(strings.privacyPolicy, style: AppTypography.headlineMedium),
       ),
       body: SingleChildScrollView(

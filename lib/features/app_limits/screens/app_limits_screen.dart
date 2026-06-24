@@ -6,6 +6,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/localization/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../data/models/app_category.dart';
@@ -81,7 +82,7 @@ class AppLimitsScreen extends ConsumerWidget {
     final sortedCats = _sortCategoryList(categoriesState.categories);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -101,7 +102,7 @@ class AppLimitsScreen extends ConsumerWidget {
                           Text(
                             strings.appLimitScreenSubtitle,
                             style: AppTypography.bodyMedium.copyWith(
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                             ),
                           ),
                         ],
@@ -179,7 +180,7 @@ class AppLimitsScreen extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Material(
-        color: AppColors.surface,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
@@ -224,8 +225,8 @@ class AppLimitsScreen extends ConsumerWidget {
                         ),
                       )
                     else
-                      const Icon(PhosphorIconsRegular.caretRight,
-                          color: AppColors.textDisabled, size: 18),
+                      Icon(PhosphorIconsRegular.caretRight,
+                          color: context.colors.textDisabled, size: 18),
                   ],
                 ),
                 if (cat.dailyLimitMinutes > 0) ...[
@@ -235,7 +236,7 @@ class AppLimitsScreen extends ConsumerWidget {
                     child: LinearProgressIndicator(
                       value: progress,
                       minHeight: 6,
-                      backgroundColor: AppColors.surfaceVariant,
+                      backgroundColor: context.colors.surfaceVariant,
                       valueColor: AlwaysStoppedAnimation<Color>(progressColor),
                     ),
                   ),
@@ -301,7 +302,7 @@ Future<void> _showCreateCategoryDialog(
     builder: (ctx) => StatefulBuilder(
       builder: (context, setDialogState) {
         return AlertDialog(
-          backgroundColor: AppColors.surface,
+          backgroundColor: context.colors.surface,
           title: Text(strings.newCategory, style: AppTypography.headlineSmall),
           content: SingleChildScrollView(
             child: Column(
@@ -318,7 +319,7 @@ Future<void> _showCreateCategoryDialog(
                     child: Container(
                       width: 56, height: 56,
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceVariant,
+                        color: context.colors.surfaceVariant,
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Center(
@@ -358,7 +359,7 @@ Future<void> _showCreateCategoryDialog(
                             'FF${preset.replaceFirst('#', '')}', radix: 16)),
                           shape: BoxShape.circle,
                           border: selected
-                              ? Border.all(color: AppColors.textPrimary, width: 2)
+                              ? Border.all(color: context.colors.textPrimary, width: 2)
                               : null,
                         ),
                       ),
@@ -378,7 +379,7 @@ Future<void> _showCreateCategoryDialog(
                       selectedColor: AppColors.primary.withOpacity(0.25),
                       onSelected: (_) => setDialogState(() => limit = value),
                       labelStyle: AppTypography.labelMedium.copyWith(
-                        color: selected ? AppColors.primary : AppColors.textPrimary),
+                        color: selected ? AppColors.primary : context.colors.textPrimary),
                     );
                   }).toList(),
                 ),
@@ -433,7 +434,7 @@ Future<String?> _showIconPicker(BuildContext context, String? current) async {
     builder: (ctx) => StatefulBuilder(
       builder: (context, setDialogState) {
         return AlertDialog(
-          backgroundColor: AppColors.surface,
+          backgroundColor: context.colors.surface,
           title: Text(AppStrings.of(context).chooseEmoji,
             style: AppTypography.headlineSmall),
           content: SizedBox(
@@ -449,7 +450,7 @@ Future<String?> _showIconPicker(BuildContext context, String? current) async {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppColors.primary.withOpacity(0.2)
-                          : AppColors.surfaceVariant,
+                          : context.colors.surfaceVariant,
                       borderRadius: BorderRadius.circular(10),
                       border: isSelected
                           ? Border.all(color: AppColors.primary, width: 2)
@@ -459,7 +460,7 @@ Future<String?> _showIconPicker(BuildContext context, String? current) async {
                       child: Icon(
                         _categoryIcon(name),
                         size: 24,
-                        color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                        color: isSelected ? AppColors.primary : context.colors.textSecondary,
                       ),
                     ),
                   ),
@@ -514,7 +515,7 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: 8),
             Text(strings.addAppsToLimitSubtitle,
               style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.textSecondary),
+                color: context.colors.textSecondary),
               textAlign: TextAlign.center),
           ],
         ),

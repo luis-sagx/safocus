@@ -31,6 +31,10 @@ abstract class AppColors {
   // ── Light theme ──────────────────────────────────────────────────────────
   static const Color backgroundLight = Color(0xFFF5F6FF);
   static const Color surfaceLight = Color(0xFFFFFFFF);
+  static const Color surfaceVariantLight = Color(0xFFEDEEF7);
   static const Color textPrimaryLight = Color(0xFF0F1117);
-  static const Color textSecondaryLight = Color(0xFF4A4F68);
+  static const Color textSecondaryLight = Color(0xFF5A607A);
+  static const Color textDisabledLight = Color(0xFF9AA0B8);
+  static const Color dividerLight = Color(0xFFE2E4F0);
+  static const Color borderLight = Color(0xFFD5D8E8);
 }

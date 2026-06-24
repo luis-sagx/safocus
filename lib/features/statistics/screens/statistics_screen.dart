@@ -6,6 +6,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../core/localization/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../core/utils/focus_score.dart';
@@ -42,7 +43,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     final strings = AppStrings.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -64,16 +65,16 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                           Text(
                             strings.last7Days,
                             style: AppTypography.bodyMedium.copyWith(
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                             ),
                           ),
                         ],
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         PhosphorIconsRegular.arrowClockwise,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                       onPressed: () async {
                         await ref
@@ -179,7 +180,7 @@ class _ScoreCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
@@ -211,7 +212,7 @@ class _StreakCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
@@ -249,7 +250,7 @@ class _UsageBarChart extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.colors.surface,
           borderRadius: BorderRadius.circular(18),
         ),
         child: Column(
@@ -262,7 +263,7 @@ class _UsageBarChart extends StatelessWidget {
                   ? strings.noUsageHistory
                   : strings.enableUsageStatsPermission,
               style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
             if (!hasUsagePermission) ...[
@@ -313,7 +314,7 @@ class _UsageBarChart extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
@@ -331,8 +332,8 @@ class _UsageBarChart extends StatelessWidget {
                   show: true,
                   drawVerticalLine: false,
                   getDrawingHorizontalLine:
-                      (_) => const FlLine(
-                        color: AppColors.divider,
+                      (_) => FlLine(
+                        color: context.colors.divider,
                         strokeWidth: 1,
                       ),
                 ),
@@ -444,7 +445,7 @@ class _BlockedAttemptsSection extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
@@ -576,8 +577,8 @@ class _BlockedAttemptsSection extends ConsumerWidget {
                   show: true,
                   drawVerticalLine: false,
                   getDrawingHorizontalLine:
-                      (_) => const FlLine(
-                        color: AppColors.divider,
+                      (_) => FlLine(
+                        color: context.colors.divider,
                         strokeWidth: 1,
                       ),
                 ),
@@ -653,11 +654,11 @@ class BlockedAttemptsDetailScreen extends ConsumerWidget {
         attempts.where((a) => _isSameDay(a.timestamp, now)).length;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.colors.background,
       appBar: AppBar(
         title: Text(strings.blockedDetailsTitle),
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: context.colors.background,
+        foregroundColor: context.colors.textPrimary,
         elevation: 0,
       ),
       body: SafeArea(
@@ -667,7 +668,7 @@ class BlockedAttemptsDetailScreen extends ConsumerWidget {
             Text(
               strings.blockedDetailsSubtitle,
               style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
             const SizedBox(height: 16),
@@ -705,13 +706,13 @@ class BlockedAttemptsDetailScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: context.colors.surface,
                   borderRadius: BorderRadius.circular(18),
                 ),
                 child: Text(
                   strings.noBlockedAttemptsRecorded,
                   style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               )
@@ -722,7 +723,7 @@ class BlockedAttemptsDetailScreen extends ConsumerWidget {
                   margin: const EdgeInsets.only(bottom: 10),
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: context.colors.surface,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(
@@ -751,7 +752,7 @@ class BlockedAttemptsDetailScreen extends ConsumerWidget {
                         Text(
                           strings.origin(sample),
                           style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                           ),
                         ),
                       ],
@@ -830,15 +831,15 @@ class _ShareCardBanner extends StatelessWidget {
                         ? 'Show your week. Flex the streak.'
                         : 'Mostrá tu semana. Flexeá la racha.',
                     style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               PhosphorIconsRegular.arrowRight,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               size: 20,
             ),
           ],
@@ -894,14 +895,14 @@ class _AppUsageList extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.colors.surface,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Center(
           child: Text(
             strings.noUsageData,
             style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
         ),
@@ -914,7 +915,7 @@ class _AppUsageList extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
@@ -933,7 +934,7 @@ class _AppUsageList extends StatelessWidget {
                         Text(
                           formatMinutes(entry.value),
                           style: AppTypography.labelMedium.copyWith(
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                           ),
                         ),
                       ],
@@ -944,7 +945,7 @@ class _AppUsageList extends StatelessWidget {
                       child: LinearProgressIndicator(
                         value: ratio,
                         minHeight: 6,
-                        backgroundColor: AppColors.surfaceVariant,
+                        backgroundColor: context.colors.surfaceVariant,
                         valueColor: const AlwaysStoppedAnimation<Color>(
                           AppColors.primary,
                         ),

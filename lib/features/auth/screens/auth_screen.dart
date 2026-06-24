@@ -5,6 +5,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../core/localization/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../services/auth_service.dart';
 
@@ -132,7 +133,7 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     final strings = AppStrings.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -156,7 +157,7 @@ class _AuthScreenState extends State<AuthScreen> {
             Text(
               strings.authSubtitle,
               style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
             const SizedBox(height: 32),
@@ -175,7 +176,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     color: filled ? AppColors.primary : Colors.transparent,
                     border: Border.all(
                       color:
-                          filled ? AppColors.primary : AppColors.textSecondary,
+                          filled ? AppColors.primary : context.colors.textSecondary,
                       width: 2,
                     ),
                   ),
@@ -306,7 +307,7 @@ class _AuthScreenState extends State<AuthScreen> {
       width: 72,
       height: 72,
       child: Material(
-        color: AppColors.surface,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(36),
         child: InkWell(
           borderRadius: BorderRadius.circular(36),
@@ -334,10 +335,10 @@ class _AuthScreenState extends State<AuthScreen> {
         child: InkWell(
           borderRadius: BorderRadius.circular(36),
           onTap: _onBackspace,
-          child: const Center(
+          child: Center(
             child: Icon(
               PhosphorIconsRegular.backspace,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               size: 28,
             ),
           ),

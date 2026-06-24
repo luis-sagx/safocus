@@ -26,6 +26,8 @@ class AppStrings {
   String get theme => isEnglish ? 'Theme' : 'Tema';
   String get language => isEnglish ? 'Language' : 'Idioma';
   String get darkTheme => isEnglish ? 'Dark' : 'Oscuro';
+  String get lightTheme => isEnglish ? 'Light' : 'Claro';
+  String get systemTheme => isEnglish ? 'System' : 'Sistema';
   String get spanish => isEnglish ? 'Spanish' : 'Español';
   String get english => isEnglish ? 'English' : 'Inglés';
   String get pinProtection =>

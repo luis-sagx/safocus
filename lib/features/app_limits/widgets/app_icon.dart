@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 
 /// In-memory cache for decoded icon bytes.
@@ -34,7 +35,7 @@ class AppIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = backgroundColor ?? AppColors.surfaceVariant;
+    final bg = backgroundColor ?? context.colors.surfaceVariant;
     final fg = foregroundColor ?? AppColors.primary;
 
     // Try base64 → image

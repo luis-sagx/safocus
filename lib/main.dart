@@ -129,14 +129,26 @@ class _SaFocusAppState extends ConsumerState<SaFocusApp>
       supportedLocales: const [Locale('es'), Locale('en')],
       locale: Locale(settings.language),
       builder: (context, child) {
-        if (_isLocked) {
-          return AuthScreen(
-            onAuthenticated: () async {
-              setState(() => _isLocked = false);
-            },
-          );
-        }
-        return child ?? const SizedBox.shrink();
+        // Keep the status bar icons legible in both themes (the app has many
+        // screens without an AppBar to drive systemOverlayStyle).
+        final isLight = Theme.of(context).brightness == Brightness.light;
+        final overlay = SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness:
+              isLight ? Brightness.dark : Brightness.light,
+          statusBarBrightness: isLight ? Brightness.light : Brightness.dark,
+        );
+        final content = _isLocked
+            ? AuthScreen(
+                onAuthenticated: () async {
+                  setState(() => _isLocked = false);
+                },
+              )
+            : (child ?? const SizedBox.shrink());
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: overlay,
+          child: content,
+        );
       },
     );
   }

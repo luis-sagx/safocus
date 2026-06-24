@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../core/localization/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../statistics/providers/statistics_provider.dart';
 import '../widgets/lock_in_card_widget.dart';
@@ -68,10 +69,10 @@ class _LockInCardScreenState extends ConsumerState<LockInCardScreen> {
         .fold(0, (sum, m) => sum + m);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: context.colors.background,
+        foregroundColor: context.colors.textPrimary,
         elevation: 0,
         title: Text(
           strings.isEnglish ? 'Lock-In Card' : 'Lock-In Card',

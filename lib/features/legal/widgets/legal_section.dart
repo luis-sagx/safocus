@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 
 class LegalSection extends StatelessWidget {
@@ -19,7 +19,7 @@ class LegalSection extends StatelessWidget {
           SelectableText(
             body,
             style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               height: 1.6,
             ),
           ),

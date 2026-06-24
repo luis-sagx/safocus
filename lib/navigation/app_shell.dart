@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../core/theme/app_colors.dart';
+import '../core/theme/app_palette.dart';
 import '../core/localization/app_strings.dart';
 import 'app_router.dart';
 
@@ -78,7 +79,7 @@ class AppShell extends StatelessWidget {
             return NavigationDestination(
               icon: Icon(
                 tab.icon,
-                color: selected ? AppColors.primary : AppColors.textSecondary,
+                color: selected ? AppColors.primary : context.colors.textSecondary,
               ),
               selectedIcon: Icon(tab.activeIcon, color: AppColors.primary),
               label: tab.label,

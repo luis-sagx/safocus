@@ -5,6 +5,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../core/localization/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../data/models/duo_pair.dart';
 import '../providers/duo_provider.dart';
@@ -37,7 +38,7 @@ class _DuoScreenState extends ConsumerState<DuoScreen> {
       SnackBar(
         content: Text(strings.copiedToClipboard),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.colors.surface,
         duration: const Duration(seconds: 2),
       ),
     );
@@ -72,7 +73,7 @@ class _DuoScreenState extends ConsumerState<DuoScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.colors.surface,
         title: Text(strings.leaveDuo, style: AppTypography.headlineSmall),
         content: Text(
           strings.leaveDuoConfirm,
@@ -84,7 +85,7 @@ class _DuoScreenState extends ConsumerState<DuoScreen> {
             child: Text(
               strings.cancel,
               style: AppTypography.labelMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           ),
@@ -111,10 +112,10 @@ class _DuoScreenState extends ConsumerState<DuoScreen> {
     final duo = ref.watch(duoProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: context.colors.background,
+        foregroundColor: context.colors.textPrimary,
         elevation: 0,
         title: Text(strings.focusDuo, style: AppTypography.headlineMedium),
       ),
@@ -140,7 +141,7 @@ class _DuoScreenState extends ConsumerState<DuoScreen> {
         Text(
           strings.focusDuoSubtitle,
           style: AppTypography.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
         ),
         const SizedBox(height: 32),
@@ -196,15 +197,15 @@ class _DuoScreenState extends ConsumerState<DuoScreen> {
               TextField(
                 controller: _codeController,
                 style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
                 decoration: InputDecoration(
                   hintText: strings.codePlaceholder,
                   hintStyle: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textDisabled,
+                    color: context.colors.textDisabled,
                   ),
                   filled: true,
-                  fillColor: AppColors.surfaceVariant,
+                  fillColor: context.colors.surfaceVariant,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
@@ -220,15 +221,15 @@ class _DuoScreenState extends ConsumerState<DuoScreen> {
               TextField(
                 controller: _nameController,
                 style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
                 decoration: InputDecoration(
                   hintText: strings.partnerName,
                   hintStyle: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textDisabled,
+                    color: context.colors.textDisabled,
                   ),
                   filled: true,
-                  fillColor: AppColors.surfaceVariant,
+                  fillColor: context.colors.surfaceVariant,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
@@ -274,7 +275,7 @@ class _DuoScreenState extends ConsumerState<DuoScreen> {
               Text(
                 strings.duoStreakLabel(duo.sharedStreakDays),
                 style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -417,9 +418,9 @@ class _SectionCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.colors.border),
       ),
       child: child,
     );
@@ -436,7 +437,7 @@ class _CodeBox extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
+        color: context.colors.surfaceVariant,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: AppColors.primary.withOpacity(0.4)),
       ),

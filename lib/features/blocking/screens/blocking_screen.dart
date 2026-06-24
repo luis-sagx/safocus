@@ -5,6 +5,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../core/constants/blocked_sites.dart';
 import '../../../core/localization/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../data/models/blocked_site.dart';
 import '../../auth/screens/auth_screen.dart';
@@ -40,7 +41,7 @@ class _BlockingScreenState extends ConsumerState<BlockingScreen>
     final notifier = ref.read(blockingProvider.notifier);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: NestedScrollView(
           headerSliverBuilder:
@@ -56,7 +57,7 @@ class _BlockingScreenState extends ConsumerState<BlockingScreen>
                         Text(
                           strings.blockWebDescription,
                           style: AppTypography.bodyMedium.copyWith(
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -87,10 +88,10 @@ class _BlockingScreenState extends ConsumerState<BlockingScreen>
                           controller: _tabs,
                           indicatorColor: AppColors.primary,
                           labelColor: AppColors.primary,
-                          unselectedLabelColor: AppColors.textSecondary,
+                          unselectedLabelColor: context.colors.textSecondary,
                           labelStyle: AppTypography.labelLarge,
                           unselectedLabelStyle: AppTypography.labelMedium,
-                          dividerColor: AppColors.divider,
+                          dividerColor: context.colors.divider,
                           tabs: [
                             Tab(text: strings.mySites),
                             Tab(text: strings.predefined),
@@ -129,9 +130,9 @@ class _BlockingScreenState extends ConsumerState<BlockingScreen>
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddDialog,
         backgroundColor: AppColors.primary,
-        child: const Icon(
+        child: Icon(
           PhosphorIconsRegular.plus,
-          color: AppColors.textPrimary,
+          color: context.colors.textPrimary,
         ),
       ),
     );
@@ -165,7 +166,7 @@ class _VpnCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strings = AppStrings.of(context);
-    final color = isActive ? AppColors.secondary : AppColors.textSecondary;
+    final color = isActive ? AppColors.secondary : context.colors.textSecondary;
     return GestureDetector(
       onTap: onToggle,
       child: AnimatedContainer(
@@ -175,13 +176,13 @@ class _VpnCard extends StatelessWidget {
           color:
               isActive
                   ? AppColors.secondary.withOpacity(0.12)
-                  : AppColors.surface,
+                  : context.colors.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color:
                 isActive
                     ? AppColors.secondary.withOpacity(0.4)
-                    : AppColors.border,
+                    : context.colors.border,
           ),
         ),
         child: Row(
@@ -254,9 +255,9 @@ class _CustomSitesList extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 PhosphorIconsRegular.plusCircle,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 size: 48,
               ),
               const SizedBox(height: 16),
@@ -265,7 +266,7 @@ class _CustomSitesList extends StatelessWidget {
               Text(
                 strings.addUrlsToBlock,
                 style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -381,14 +382,14 @@ class _SiteTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             PhosphorIconsRegular.globeSimple,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
             size: 20,
           ),
           const SizedBox(width: 12),
@@ -460,10 +461,10 @@ class _AddSiteSheetState extends State<_AddSiteSheet> {
               autofocus: true,
               decoration: InputDecoration(
                 hintText: strings.domainPlaceholder,
-                prefixIcon: const Icon(
+                prefixIcon: Icon(
                   PhosphorIconsRegular.globeSimple,
                   size: 18,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
               keyboardType: TextInputType.url,

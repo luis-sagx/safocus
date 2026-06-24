@@ -7,6 +7,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/localization/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../data/models/app_category.dart';
@@ -130,8 +131,8 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
 
     if (cat == null) {
       return Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(backgroundColor: AppColors.background),
+        backgroundColor: context.colors.background,
+        appBar: AppBar(backgroundColor: context.colors.background),
         body: const Center(child: Text('Category not found')),
       );
     }
@@ -148,12 +149,12 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
     final color = cat.flutterColor;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: context.colors.background,
         leading: IconButton(
-          icon: const Icon(PhosphorIconsRegular.arrowLeft,
-              color: AppColors.textPrimary),
+          icon: Icon(PhosphorIconsRegular.arrowLeft,
+              color: context.colors.textPrimary),
           onPressed: () => context.pop(),
         ),
         title: Row(
@@ -168,8 +169,8 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(PhosphorIconsRegular.arrowsClockwise,
-              color: AppColors.textSecondary, size: 20),
+            icon: Icon(PhosphorIconsRegular.arrowsClockwise,
+              color: context.colors.textSecondary, size: 20),
             tooltip: strings.refresh,
             onPressed: () => limitsNotifier.refresh(),
           ),
@@ -182,7 +183,7 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: context.colors.surface,
               borderRadius: BorderRadius.circular(16),
               border: isExceeded
                   ? Border.all(color: AppColors.error.withOpacity(0.4))
@@ -199,7 +200,7 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
                         children: [
                           Text(strings.appUsageLimits,
                             style: AppTypography.labelMedium.copyWith(
-                              color: AppColors.textSecondary)),
+                              color: context.colors.textSecondary)),
                           const SizedBox(height: 4),
                           Text(
                             '${formatMinutes(totalUsage)} / ${cat.dailyLimitMinutes > 0 ? formatMinutes(cat.dailyLimitMinutes) : '∞'}',
@@ -228,7 +229,7 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
                     child: LinearProgressIndicator(
                       value: progress,
                       minHeight: 8,
-                      backgroundColor: AppColors.surfaceVariant,
+                      backgroundColor: context.colors.surfaceVariant,
                       valueColor: AlwaysStoppedAnimation<Color>(
                         isExceeded ? AppColors.error
                             : progress > 0.8 ? AppColors.warning : color),
@@ -260,7 +261,7 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
                   await limitsNotifier.reloadAndSync();
                 },
                 labelStyle: AppTypography.labelMedium.copyWith(
-                  color: selected ? AppColors.primary : AppColors.textPrimary),
+                  color: selected ? AppColors.primary : context.colors.textPrimary),
               );
             }).toList(),
           ),
@@ -302,7 +303,7 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
               const Spacer(),
               Text('${apps.length}',
                 style: AppTypography.labelMedium.copyWith(
-                  color: AppColors.textSecondary)),
+                  color: context.colors.textSecondary)),
             ],
           ),
           const SizedBox(height: 10),
@@ -313,7 +314,7 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
               child: Center(
                 child: Text(strings.noLimitsConfigured,
                   style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textSecondary)),
+                    color: context.colors.textSecondary)),
               ),
             )
           else
@@ -334,8 +335,8 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddAppSheet(context),
         backgroundColor: AppColors.primary,
-        child: const Icon(PhosphorIconsRegular.plus,
-            color: AppColors.textPrimary),
+        child: Icon(PhosphorIconsRegular.plus,
+            color: context.colors.textPrimary),
       ),
     );
   }
@@ -382,7 +383,7 @@ class _AppRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -392,7 +393,7 @@ class _AppRow extends StatelessWidget {
             appName: limit.appName,
             size: 40,
             borderRadius: 10,
-            backgroundColor: AppColors.surfaceVariant,
+            backgroundColor: context.colors.surfaceVariant,
             foregroundColor: AppColors.primary,
           ),
           const SizedBox(width: 12),
@@ -411,9 +412,9 @@ class _AppRow extends StatelessWidget {
           const SizedBox(width: 8),
           Text(formatMinutes(limit.usedMinutesToday),
             style: AppTypography.labelMedium.copyWith(
-              color: AppColors.textSecondary)),
+              color: context.colors.textSecondary)),
           PopupMenuButton<String>(
-            color: AppColors.surfaceVariant,
+            color: context.colors.surfaceVariant,
             onSelected: (v) {
               if (v == 'delete') onDelete();
             },
@@ -534,8 +535,8 @@ class _AppPickerSheetState extends State<_AppPickerSheet> {
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(PhosphorIconsRegular.x,
-                    color: AppColors.textSecondary),
+                  icon: Icon(PhosphorIconsRegular.x,
+                    color: context.colors.textSecondary),
                 ),
               ],
             ),
@@ -548,12 +549,12 @@ class _AppPickerSheetState extends State<_AppPickerSheet> {
               autofocus: true,
               decoration: InputDecoration(
                 hintText: strings.searchApp,
-                prefixIcon: const Icon(PhosphorIconsRegular.magnifyingGlass,
-                  size: 18, color: AppColors.textSecondary),
+                prefixIcon: Icon(PhosphorIconsRegular.magnifyingGlass,
+                  size: 18, color: context.colors.textSecondary),
                 suffixIcon: _searchCtrl.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(PhosphorIconsRegular.x,
-                          size: 16, color: AppColors.textSecondary),
+                        icon: Icon(PhosphorIconsRegular.x,
+                          size: 16, color: context.colors.textSecondary),
                         onPressed: () => _searchCtrl.clear())
                     : null,
               ),
@@ -575,13 +576,13 @@ class _AppPickerSheetState extends State<_AppPickerSheet> {
                         Text(
                           AppStrings.of(context).loadingApps,
                           style: AppTypography.bodyMedium.copyWith(
-                            color: AppColors.textSecondary),
+                            color: context.colors.textSecondary),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           AppStrings.of(context).loadingAppsSubtitle,
                           style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.textDisabled),
+                            color: context.colors.textDisabled),
                         ),
                       ],
                     ),
@@ -600,7 +601,7 @@ class _AppPickerSheetState extends State<_AppPickerSheet> {
                         ? Center(
                             child: Text(strings.noResults,
                               style: AppTypography.bodyMedium.copyWith(
-                                color: AppColors.textSecondary)),
+                                color: context.colors.textSecondary)),
                           )
                         : ListView.builder(
                             padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -620,7 +621,7 @@ class _AppPickerSheetState extends State<_AppPickerSheet> {
                                     style: AppTypography.bodyMedium),
                                 subtitle: Text(app.packageName,
                                     style: AppTypography.bodySmall.copyWith(
-                                      color: AppColors.textSecondary),
+                                      color: context.colors.textSecondary),
                                     overflow: TextOverflow.ellipsis),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12)),
