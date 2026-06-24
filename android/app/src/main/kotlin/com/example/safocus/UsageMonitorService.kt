@@ -57,6 +57,10 @@ class UsageMonitorService : Service() {
 
         private const val POLL_INTERVAL_MS = 500L
 
+        // After the user taps "Volver al inicio", suppress re-blocking the same
+        // package for this long so the home transition doesn't flicker (Bug 1).
+        private const val DISMISS_COOLDOWN_MS = 2_500L
+
         // Packages that must never be blocked regardless of limits.
         private val IGNORED = setOf(
             "com.example.safocus",
@@ -241,9 +245,17 @@ class UsageMonitorService : Service() {
         }
     }
 
+    /** Returns true if the user dismissed this package's block within the cooldown. */
+    private fun isWithinDismissCooldown(pkg: String, now: Long): Boolean {
+        val prefs = getSharedPreferences(BlockOverlayActivity.PREFS_BLOCK, MODE_PRIVATE)
+        val dismissedAt = prefs.getLong("${BlockOverlayActivity.KEY_DISMISSED}$pkg", 0L)
+        return dismissedAt > 0L && now - dismissedAt < DISMISS_COOLDOWN_MS
+    }
+
     /** Debounce-guarded launch of BlockOverlayActivity (Bug 4: FLAG_ACTIVITY_NEW_TASK). */
     private fun triggerBlock(pkg: String, appName: String, usedMins: Int, limitMins: Int, now: Long) {
         if (pkg == lastBlockedPkg && now - lastBlockTime < debounceMs) return
+        if (isWithinDismissCooldown(pkg, now)) return
         lastBlockedPkg = pkg
         lastBlockTime  = now
         val i = Intent(this, BlockOverlayActivity::class.java).apply {
@@ -287,6 +299,14 @@ class UsageMonitorService : Service() {
             if ((getRealTimeUsageMs(usm, pkg) / 60_000) >= lim) blockedNow.add(pkg)
         }
         // If nothing blocked, dismiss any lingering PiP overlay.
+        if (blockedNow.isEmpty()) {
+            if (pipOverlayView != null) removePipBlockOverlay()
+            return
+        }
+
+        // Honor the "Volver al inicio" dismissal cooldown (Bug 1).
+        val nowTs = System.currentTimeMillis()
+        blockedNow.removeAll { isWithinDismissCooldown(it, nowTs) }
         if (blockedNow.isEmpty()) {
             if (pipOverlayView != null) removePipBlockOverlay()
             return
@@ -423,6 +443,11 @@ class UsageMonitorService : Service() {
             setPadding((24*dp).toInt(), (14*dp).toInt(), (24*dp).toInt(), (14*dp).toInt())
         }
         homeBtn.setOnClickListener {
+            // Record the dismissal so the monitor doesn't immediately re-block.
+            getSharedPreferences(BlockOverlayActivity.PREFS_BLOCK, MODE_PRIVATE)
+                .edit()
+                .putLong("${BlockOverlayActivity.KEY_DISMISSED}$pkg", System.currentTimeMillis())
+                .apply()
             startActivity(Intent(Intent.ACTION_MAIN).apply {
                 addCategory(Intent.CATEGORY_HOME)
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -430,29 +455,6 @@ class UsageMonitorService : Service() {
             removePipBlockOverlay()
         }
         root.addView(homeBtn, rowParams)
-
-        // "Extensión de emergencia" button (once per day)
-        val prefs = getSharedPreferences(BlockOverlayActivity.PREFS_BLOCK, MODE_PRIVATE)
-        val extUsed = prefs.getBoolean("${BlockOverlayActivity.KEY_EXT_USED}$pkg", false)
-        if (!extUsed) {
-            root.addView(space(12))
-            val extBtn = Button(this).apply {
-                text = "Extensión de emergencia (+5 min)"
-                setBackgroundColor(Color.parseColor("#1F2937"))
-                setTextColor(Color.parseColor("#D1D5DB"))
-                textSize = 14f
-                setPadding((24*dp).toInt(), (12*dp).toInt(), (24*dp).toInt(), (12*dp).toInt())
-            }
-            extBtn.setOnClickListener {
-                val intent = Intent(this@UsageMonitorService, MainActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                    putExtra(MainActivity.EXTRA_EMERGENCY_EXT_PKG, pkg)
-                }
-                startActivity(intent)
-                removePipBlockOverlay()
-            }
-            root.addView(extBtn, rowParams)
-        }
 
         // ── Add to WindowManager ──────────────────────────────────────────
         val wm = getSystemService(WINDOW_SERVICE) as? WindowManager ?: return
