@@ -8,6 +8,7 @@ import android.content.Intent
 import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
+import android.provider.Settings
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import java.io.FileInputStream
@@ -111,6 +112,11 @@ class SaFocusVpnService : VpnService() {
     // domain -> (dns response bytes, expiry epoch ms)
     private val dnsCache = ConcurrentHashMap<String, DnsCacheEntry>()
     private data class DnsCacheEntry(val payload: ByteArray, val expiresAt: Long)
+
+    // Web-block overlay debounce — a single page load fires many DNS queries,
+    // so collapse them into one block screen per window.
+    @Volatile private var lastWebBlockTime = 0L
+    private val webBlockDebounceMs = 6_000L
 
     // ══════════════════════════════════════════════════════════════════════
     //  SERVICE LIFECYCLE
@@ -246,6 +252,7 @@ class SaFocusVpnService : VpnService() {
         if (blocked) {
             Log.d(TAG, "BLOCKED: $domain")
             recordBlockedAttempt(domain)
+            showWebBlockOverlay(domain)
             return buildNxdomain(ipPacket, dnsQuery)
         }
 
@@ -281,6 +288,40 @@ class SaFocusVpnService : VpnService() {
         }
 
         return wrapDnsResponse(origIp, dnsResp)
+    }
+
+    /**
+     * Shows the SaFocus full-screen block page when a distracting website is
+     * accessed, instead of leaving the browser with a confusing "can't find
+     * IP" / "site can't be reached" error (issue 5).
+     *
+     * Debounced so a single page load (which fires many DNS queries) only
+     * triggers one block screen. Requires SYSTEM_ALERT_WINDOW so the service can
+     * start an activity from the background; if not granted we silently fall
+     * back to the NXDOMAIN-only behaviour.
+     */
+    private fun showWebBlockOverlay(domain: String) {
+        val now = System.currentTimeMillis()
+        if (now - lastWebBlockTime < webBlockDebounceMs) return
+        lastWebBlockTime = now
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+            !Settings.canDrawOverlays(this)
+        ) return
+
+        try {
+            val i = Intent(this, BlockOverlayActivity::class.java).apply {
+                addFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP
+                )
+                putExtra(BlockOverlayActivity.EXTRA_DOMAIN, domain)
+            }
+            startActivity(i)
+        } catch (_: Exception) {
+            // Background activity start not allowed — keep NXDOMAIN behaviour.
+        }
     }
 
     private fun queryUpstream(server: String, query: ByteArray): ByteArray? {
