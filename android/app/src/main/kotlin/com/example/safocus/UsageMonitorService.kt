@@ -236,8 +236,25 @@ class UsageMonitorService : Service() {
             val exceeded = prefs.getStringSet(FocusBlockService.KEY_EXCEEDED, emptySet()) ?: emptySet()
             if (currentPkg in exceeded) {
                 cancelLimitNotification()
-                val usedMins  = prefs.getInt("usedmins_$currentPkg", 0)
-                val lMins     = prefs.getInt("limitmins_$currentPkg", 0)
+                // catId may be set even here (app is in a category whose limit was 0
+                // so the category-aware block above was skipped). In that case aggregate
+                // the category total so the block page shows the correct numbers.
+                val usedMins: Int
+                val lMins: Int
+                if (!catId.isNullOrEmpty()) {
+                    var catTotalMs = 0L
+                    for ((key, _) in prefs.all) {
+                        if (key.startsWith("catid_") && prefs.getString(key, null) == catId) {
+                            catTotalMs += getRealTimeUsageMs(usm, key.removePrefix("catid_"))
+                        }
+                    }
+                    val catLimit = prefs.getInt("catlimit_$catId", 0)
+                    usedMins = (catTotalMs / 60_000).toInt()
+                    lMins    = if (catLimit > 0) catLimit else prefs.getInt("limitmins_$currentPkg", 0)
+                } else {
+                    usedMins = (getRealTimeUsageMs(usm, currentPkg) / 60_000).toInt()
+                    lMins    = prefs.getInt("limitmins_$currentPkg", 0)
+                }
                 triggerBlock(currentPkg, appName, usedMins, lMins, now)
             } else if (currentPkg != limitNotifPkg && limitNotifPkg.isNotEmpty()) {
                 cancelLimitNotification()

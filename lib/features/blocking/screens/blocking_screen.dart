@@ -327,6 +327,7 @@ class _DefaultSitesList extends StatelessWidget {
         final category = categories[i];
         final catSites = sites.where((s) => s.category == category).toList();
         final allActive = catSites.every((s) => s.isActive);
+        final isAdult = category == 'Adulto';
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -351,17 +352,19 @@ class _DefaultSitesList extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            ...catSites.map(
-              (s) => Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: _SiteTile(
-                  site: s,
-                  onToggle: () => onToggle(s),
-                  onDelete: null, // default sites cannot be deleted
+            if (!isAdult) ...[
+              const SizedBox(height: 8),
+              ...catSites.map(
+                (s) => Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: _SiteTile(
+                    site: s,
+                    onToggle: () => onToggle(s),
+                    onDelete: null,
+                  ),
                 ),
               ),
-            ),
+            ],
           ],
         );
       },

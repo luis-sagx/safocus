@@ -391,46 +391,23 @@ class _AppLimitRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = AppStrings.of(context);
-    final progress = limit.progressRatio as double;
-    final remaining = limit.remainingMinutes as int;
+    final used = limit.usedMinutesToday as int;
     final exceeded = limit.isExceeded as bool;
-    final color = exceeded
-      ? AppColors.error
-      : progress > 0.8
-      ? AppColors.warning
-      : AppColors.primary;
+    final color = exceeded ? AppColors.error : context.colors.textSecondary;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: context.colors.surface,
         borderRadius: BorderRadius.circular(14),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(limit.appName as String, style: AppTypography.labelLarge),
-              Text(
-                exceeded
-                    ? strings.limitExceeded
-                    : strings.remainingMinutes(formatMinutes(remaining)),
-                style: AppTypography.labelMedium.copyWith(color: color),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: progress,
-              backgroundColor: context.colors.surfaceVariant,
-              valueColor: AlwaysStoppedAnimation<Color>(color),
-              minHeight: 6,
-            ),
+          Text(limit.appName as String, style: AppTypography.labelLarge),
+          Text(
+            formatMinutes(used),
+            style: AppTypography.labelMedium.copyWith(color: color),
           ),
         ],
       ),

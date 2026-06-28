@@ -80,7 +80,8 @@ class SettingsScreen extends ConsumerWidget {
                     child: DropdownButton<String>(
                       value: settings.language,
                       dropdownColor: context.colors.surfaceVariant,
-                      style: AppTypography.bodyMedium,
+                      style: AppTypography.bodyMedium.copyWith(
+                          color: context.colors.textPrimary),
                       items: [
                         DropdownMenuItem(
                           value: 'es',

@@ -113,10 +113,11 @@ class SaFocusVpnService : VpnService() {
     private val dnsCache = ConcurrentHashMap<String, DnsCacheEntry>()
     private data class DnsCacheEntry(val payload: ByteArray, val expiresAt: Long)
 
-    // Web-block overlay debounce — a single page load fires many DNS queries,
-    // so collapse them into one block screen per window.
+    // Web-block overlay: one overlay per 15 seconds max.
+    // Adult/gambling domains are never embedded on unrelated sites, so a simple
+    // debounce is all we need — no burst detection required.
     @Volatile private var lastWebBlockTime = 0L
-    private val webBlockDebounceMs = 6_000L
+    private val webBlockDebounceMs = 15_000L
 
     // ══════════════════════════════════════════════════════════════════════
     //  SERVICE LIFECYCLE
@@ -246,8 +247,17 @@ class SaFocusVpnService : VpnService() {
             ?: return forwardAndCache(ipPacket, dnsQuery, null)
 
         // 1. Blocked?
+        // Only match the exact domain or user-facing subdomains (www, m, web, mobile, lite).
+        // Wildcard subdomain matching (*.facebook.com) causes false positives because many
+        // sites embed Facebook's tracking/graph APIs (graph.facebook.com, connect.facebook.net).
         val blocked = blockedDomains.any { bd ->
-            domain == bd || domain.endsWith(".$bd")
+            domain == bd ||
+            domain == "www.$bd" ||
+            domain == "m.$bd" ||
+            domain == "web.$bd" ||
+            domain == "mobile.$bd" ||
+            domain == "lite.$bd" ||
+            domain == "touch.$bd"
         }
         if (blocked) {
             Log.d(TAG, "BLOCKED: $domain")
@@ -319,9 +329,7 @@ class SaFocusVpnService : VpnService() {
                 putExtra(BlockOverlayActivity.EXTRA_DOMAIN, domain)
             }
             startActivity(i)
-        } catch (_: Exception) {
-            // Background activity start not allowed — keep NXDOMAIN behaviour.
-        }
+        } catch (_: Exception) {}
     }
 
     private fun queryUpstream(server: String, query: ByteArray): ByteArray? {
