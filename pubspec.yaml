@@ -30,9 +30,6 @@ dependencies:
   # Permissions
   permission_handler: ^11.3.1
 
-  # Icons
-  phosphor_flutter: ^2.1.0
-
   # Biometric auth
   local_auth: ^2.3.0
 
@@ -84,6 +81,12 @@ flutter:
     - family: Inter
       fonts:
         - asset: assets/fonts/Inter-Variable.ttf
+    - family: PhosphorRegular
+      fonts:
+        - asset: assets/fonts/phosphor/Phosphor-Regular.ttf
+    - family: PhosphorFill
+      fonts:
+        - asset: assets/fonts/phosphor/Phosphor-Fill.ttf
 
   assets:
     - assets/images/
