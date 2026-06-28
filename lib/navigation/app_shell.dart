@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:safocus/core/icons/phosphor_icons.dart';
 
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_palette.dart';
