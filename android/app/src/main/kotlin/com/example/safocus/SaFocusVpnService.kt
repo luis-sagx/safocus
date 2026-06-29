@@ -54,6 +54,11 @@ class SaFocusVpnService : VpnService() {
 
         const val ACTION_START = "SAFOCUS_VPN_START"
         const val ACTION_STOP  = "SAFOCUS_VPN_STOP"
+        // Cost-mirror escape: overlay asks the service to let a domain resolve
+        // normally for a short window after the user pays the 15s toll.
+        const val ACTION_TEMP_ALLOW = "SAFOCUS_VPN_TEMP_ALLOW"
+        const val EXTRA_TEMP_ALLOW_DOMAIN = "temp_allow_domain"
+        private const val TEMP_ALLOW_MS = 5 * 60_000L
         const val EXTRA_DOMAINS = "blocked_domains"
         const val NOTIF_CHANNEL = "safocus_vpn"
         const val NOTIF_ID = 9001
@@ -119,6 +124,10 @@ class SaFocusVpnService : VpnService() {
     @Volatile private var lastWebBlockTime = 0L
     private val webBlockDebounceMs = 15_000L
 
+    // Cost-mirror escape windows: domain -> expiry epoch ms. In-memory only;
+    // a service restart clears it (the toll is simply re-asked). See design 3.3.
+    private val tempAllow = ConcurrentHashMap<String, Long>()
+
     // ══════════════════════════════════════════════════════════════════════
     //  SERVICE LIFECYCLE
     // ══════════════════════════════════════════════════════════════════════
@@ -128,6 +137,14 @@ class SaFocusVpnService : VpnService() {
             ACTION_STOP -> {
                 stopVpn()
                 return START_NOT_STICKY
+            }
+            ACTION_TEMP_ALLOW -> {
+                val d = intent.getStringExtra(EXTRA_TEMP_ALLOW_DOMAIN)
+                if (!d.isNullOrEmpty()) {
+                    tempAllow[d] = System.currentTimeMillis() + TEMP_ALLOW_MS
+                    Log.d(TAG, "TEMP_ALLOW: $d for 5 min")
+                }
+                return START_STICKY
             }
             ACTION_START -> {
                 blockedDomains = intent
@@ -259,7 +276,7 @@ class SaFocusVpnService : VpnService() {
             domain == "lite.$bd" ||
             domain == "touch.$bd"
         }
-        if (blocked) {
+        if (blocked && !isTempAllowed(domain)) {
             Log.d(TAG, "BLOCKED: $domain")
             recordBlockedAttempt(domain)
             showWebBlockOverlay(domain)
@@ -310,6 +327,17 @@ class SaFocusVpnService : VpnService() {
      * start an activity from the background; if not granted we silently fall
      * back to the NXDOMAIN-only behaviour.
      */
+    /**
+     * True if [domain] is inside its 5-minute cost-mirror escape window.
+     * Expired entries are pruned opportunistically.
+     */
+    private fun isTempAllowed(domain: String): Boolean {
+        val exp = tempAllow[domain] ?: return false
+        if (exp > System.currentTimeMillis()) return true
+        tempAllow.remove(domain)
+        return false
+    }
+
     private fun showWebBlockOverlay(domain: String) {
         val now = System.currentTimeMillis()
         if (now - lastWebBlockTime < webBlockDebounceMs) return

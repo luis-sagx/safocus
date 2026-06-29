@@ -303,6 +303,31 @@ class MainActivity : FlutterActivity() {
                         result.success(null)
                     }
 
+                    // ── Cost-mirror data for the web-block overlay ─────────
+                    // Flutter pushes identity/scrollHours (onboarding) and
+                    // streak/focus (on resume); each call writes only the
+                    // arguments it carries. BlockOverlayActivity reads these.
+                    "syncCostMirrorData" -> {
+                        val prefs = getSharedPreferences(
+                            BlockOverlayActivity.PREFS_BLOCK, MODE_PRIVATE
+                        )
+                        val edit = prefs.edit()
+                        call.argument<String>("identity")?.let {
+                            edit.putString("mirror_identity", it)
+                        }
+                        call.argument<Int>("scrollHours")?.let {
+                            edit.putInt("mirror_scroll_hours", it)
+                        }
+                        call.argument<Int>("streak")?.let {
+                            edit.putInt("mirror_streak", it)
+                        }
+                        call.argument<Int>("focus")?.let {
+                            edit.putInt("mirror_focus", it)
+                        }
+                        edit.apply()
+                        result.success(null)
+                    }
+
                     // Legacy — kept so old onboarding screens don't crash.
                     "openAccessibilitySettings" -> {
                         startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))

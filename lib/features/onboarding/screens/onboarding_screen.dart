@@ -140,6 +140,26 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   Future<void> _finish() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(AppConstants.keyOnboardingDone, true);
+    // Persist cost-mirror inputs so the web-block overlay can confront the user
+    // with their own chosen identity and scroll cost.
+    if (_selectedIdentity != null) {
+      await prefs.setString(AppConstants.keyIdentity, _selectedIdentity!);
+    }
+    await prefs.setInt(
+      AppConstants.keyScrollHoursPerDay,
+      _scrollHoursPerDay,
+    );
+    // Mirror into the native prefs the BlockOverlayActivity reads.
+    try {
+      await const MethodChannel(
+        AppConstants.channelBlockControl,
+      ).invokeMethod('syncCostMirrorData', {
+        'identity': _selectedIdentity,
+        'scrollHours': _scrollHoursPerDay,
+      });
+    } catch (_) {
+      // Non-Android / channel unavailable — overlay degrades gracefully.
+    }
     if (mounted) context.go(AppRoutes.home);
   }
 

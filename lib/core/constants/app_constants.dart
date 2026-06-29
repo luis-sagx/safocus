@@ -28,6 +28,9 @@ abstract class AppConstants {
   static const String keyBlockAttemptsResetDate = 'block_attempts_reset_date';
   static const String keyAppCategories = 'app_categories';
   static const String keyCategoriesMigrated = '_categories_migrated';
+  // Cost-mirror data captured in onboarding, mirrored to native prefs.
+  static const String keyIdentity = 'identity';
+  static const String keyScrollHoursPerDay = 'scroll_hours_per_day';
 
   // ── Notification IDs ─────────────────────────────────────────────────────
   static const int notifMotivationalId = 1000;

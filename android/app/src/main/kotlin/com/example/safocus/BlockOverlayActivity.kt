@@ -6,6 +6,8 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.Gravity
 import android.view.View
 import android.view.WindowInsets
@@ -14,6 +16,8 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
+import kotlin.math.roundToInt
 
 /**
  * Full-screen blocking overlay shown when the user opens an app that has
@@ -47,6 +51,14 @@ class BlockOverlayActivity : Activity() {
 
     private var blockedPkg = ""
 
+    // ── Cost-mirror (web-block) state ────────────────────────────────────────
+    private val tollSeconds = 15
+    private var secondsElapsed = 0
+    private var mirrorHandler: Handler? = null
+    private var mirrorRunnable: Runnable? = null
+    private var counterView: TextView? = null
+    private var continueBtn: Button? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -70,6 +82,12 @@ class BlockOverlayActivity : Activity() {
         val isWeb = !domain.isNullOrEmpty()
 
         val dp = resources.displayMetrics.density
+
+        // ── Web block → "Espejo del costo" (separate UX from app-limit) ──
+        if (isWeb) {
+            setContentView(buildWebMirror(domain!!, dp))
+            return
+        }
 
         // ── Root container ─────────────────────────────────────────────
         val root = LinearLayout(this).apply {
@@ -132,6 +150,196 @@ class BlockOverlayActivity : Activity() {
         root.addView(homeBtn, fullWidthParams(dp))
 
         setContentView(root)
+    }
+
+    // ── Cost mirror (web block) ──────────────────────────────────────────────
+
+    /**
+     * "Espejo del costo": instead of a forgettable black "site blocked" page,
+     * confront the user with what the distraction costs them — their chosen
+     * identity, a live counter, the yearly scroll projection, and their streak.
+     * "Continuar igual" is gated behind a 15s toll; "Volver" is always available.
+     *
+     * Reads personalised data from [PREFS_BLOCK] (written by the Flutter side via
+     * the block_control channel). Missing data degrades gracefully.
+     *
+     * NOTE: copy is Spanish-only for now; full i18n is tracked as a follow-up.
+     */
+    private fun buildWebMirror(domain: String, dp: Float): View {
+        val prefs = getSharedPreferences(PREFS_BLOCK, MODE_PRIVATE)
+        val identity = prefs.getString("mirror_identity", null)
+        val scrollHours = prefs.getInt("mirror_scroll_hours", 3).let {
+            if (it <= 0) 3 else it
+        }
+        val streak = prefs.getInt("mirror_streak", 0)
+
+        val accent = Color.parseColor("#7C3AED")
+
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            setBackgroundColor(Color.parseColor("#0D0D0D"))
+            setPadding(
+                (32 * dp).toInt(), (24 * dp).toInt(),
+                (32 * dp).toInt(), (24 * dp).toInt()
+            )
+        }
+
+        // Domain (muted)
+        root.addView(textView(domain, 14f, Color.parseColor("#777777"), Gravity.CENTER))
+        root.addView(space(8, dp))
+        // Title
+        root.addView(
+            textView("Mirá lo que te cuesta", 26f, Color.WHITE, Gravity.CENTER, bold = true)
+        )
+        root.addView(space(20, dp))
+
+        // Identity line (omitted if user skipped onboarding)
+        identityLabel(identity)?.let {
+            root.addView(
+                textView("Esto te aleja de $it", 18f, accent, Gravity.CENTER, bold = true)
+            )
+            root.addView(space(16, dp))
+        }
+
+        // Live "time spent staring" counter — updated each second by the toll timer.
+        val counter = textView(
+            "Llevás 00:00 mirando esto", 16f, Color.parseColor("#E0E0E0"), Gravity.CENTER
+        )
+        counterView = counter
+        root.addView(counter)
+        root.addView(space(12, dp))
+
+        // Yearly projection (ported from onboarding's _costMirrorBody)
+        val hoursPerYear = scrollHours * 7 * 52
+        val books = (hoursPerYear / 8.0).roundToInt()
+        val episodes = (hoursPerYear / 0.75).roundToInt()
+        val workouts = hoursPerYear
+        root.addView(
+            textView(
+                "${hoursPerYear}h/año → $books libros · $episodes episodios · $workouts entrenos",
+                14f, Color.parseColor("#A0A0A0"), Gravity.CENTER
+            )
+        )
+        root.addView(space(16, dp))
+
+        // Streak at stake (omitted for brand-new users)
+        if (streak > 0) {
+            root.addView(
+                textView(
+                    "🔥 $streak días en juego",
+                    16f, Color.parseColor("#FF7A00"), Gravity.CENTER, bold = true
+                )
+            )
+            root.addView(space(8, dp))
+        }
+
+        root.addView(space(32, dp))
+
+        // "Volver" — always available, goes home.
+        val backBtn = Button(this).apply {
+            text = "Volver"
+            setBackgroundColor(accent)
+            setTextColor(Color.WHITE)
+            textSize = 16f
+            typeface = Typeface.DEFAULT_BOLD
+            setPadding(
+                (24 * dp).toInt(), (14 * dp).toInt(),
+                (24 * dp).toInt(), (14 * dp).toInt()
+            )
+            setOnClickListener { goHome() }
+        }
+        root.addView(backBtn, fullWidthParams(dp))
+        root.addView(space(12, dp))
+
+        // "Continuar igual" — disabled behind the 15s toll countdown.
+        val contBtn = Button(this).apply {
+            text = "Continuar en ${tollSeconds}s"
+            setBackgroundColor(Color.parseColor("#2A2A2A"))
+            setTextColor(Color.parseColor("#CCCCCC"))
+            textSize = 16f
+            isEnabled = false
+            alpha = 0.5f
+            setPadding(
+                (24 * dp).toInt(), (14 * dp).toInt(),
+                (24 * dp).toInt(), (14 * dp).toInt()
+            )
+            setOnClickListener {
+                sendTempAllow(domain)
+                Toast.makeText(
+                    this@BlockOverlayActivity,
+                    "Volvé a la pestaña y recargá",
+                    Toast.LENGTH_LONG
+                ).show()
+                finishAndRemoveTask()
+            }
+        }
+        continueBtn = contBtn
+        root.addView(contBtn, fullWidthParams(dp))
+
+        startTollTimer()
+        return root
+    }
+
+    private fun identityLabel(id: String?): String? = when (id) {
+        "study"  -> "📚 Estudiar"
+        "gym"    -> "💪 Gym"
+        "create" -> "🎨 Crear"
+        "sleep"  -> "😴 Dormir bien"
+        else     -> null
+    }
+
+    /** Ticks once a second: advances the live counter and the toll countdown,
+     *  enabling "Continuar igual" once the toll is paid. */
+    private fun startTollTimer() {
+        val handler = Handler(Looper.getMainLooper())
+        mirrorHandler = handler
+        val r = object : Runnable {
+            override fun run() {
+                secondsElapsed++
+                counterView?.text = "Llevás ${formatMmSs(secondsElapsed)} mirando esto"
+                val remaining = tollSeconds - secondsElapsed
+                continueBtn?.let { btn ->
+                    if (remaining > 0) {
+                        btn.text = "Continuar en ${remaining}s"
+                    } else {
+                        btn.text = "Continuar igual"
+                        btn.isEnabled = true
+                        btn.alpha = 1f
+                        btn.setBackgroundColor(Color.parseColor("#3A3A3A"))
+                        btn.setTextColor(Color.WHITE)
+                    }
+                }
+                handler.postDelayed(this, 1000)
+            }
+        }
+        mirrorRunnable = r
+        handler.postDelayed(r, 1000)
+    }
+
+    private fun formatMmSs(total: Int): String {
+        val m = total / 60
+        val s = total % 60
+        return String.format("%02d:%02d", m, s)
+    }
+
+    /** Opens a 5-minute resolve window for [domain] in the VPN service. */
+    private fun sendTempAllow(domain: String) {
+        try {
+            startService(
+                Intent(this, SaFocusVpnService::class.java).apply {
+                    action = SaFocusVpnService.ACTION_TEMP_ALLOW
+                    putExtra(SaFocusVpnService.EXTRA_TEMP_ALLOW_DOMAIN, domain)
+                }
+            )
+        } catch (_: Exception) {}
+    }
+
+    override fun onDestroy() {
+        mirrorRunnable?.let { mirrorHandler?.removeCallbacks(it) }
+        mirrorHandler = null
+        mirrorRunnable = null
+        super.onDestroy()
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────

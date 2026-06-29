@@ -13,6 +13,7 @@ import 'features/app_limits/services/limit_monitor_service.dart';
 import 'features/auth/screens/auth_screen.dart';
 import 'features/notifications/services/notification_service.dart';
 import 'features/settings/providers/settings_provider.dart';
+import 'features/statistics/providers/statistics_provider.dart';
 import 'navigation/app_router.dart';
 
 // Global router reference for deep-link navigation from notifications.
@@ -110,8 +111,24 @@ class _SaFocusAppState extends ConsumerState<SaFocusApp>
       // permission banner / onboarding buttons update immediately instead of
       // requiring the user to re-enter the screen.
       ref.read(appLimitsProvider.notifier).refreshPermissions();
+      // Keep the web-block cost mirror's streak/focus numbers fresh.
+      _pushCostMirrorStats();
     } else if (state == AppLifecycleState.paused) {
       LimitMonitorService.instance.stopForegroundMonitor();
+    }
+  }
+
+  /// Push the latest streak + focus score into the native prefs the
+  /// BlockOverlayActivity cost mirror reads.
+  void _pushCostMirrorStats() {
+    try {
+      final stats = ref.read(statisticsProvider);
+      const MethodChannel(AppConstants.channelBlockControl).invokeMethod(
+        'syncCostMirrorData',
+        {'streak': stats.streakDays, 'focus': stats.todayLockInScore},
+      );
+    } catch (_) {
+      // Non-Android / channel unavailable.
     }
   }
 
