@@ -19,8 +19,6 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.io.ByteArrayOutputStream
-import java.util.Calendar
-import java.util.TimeZone
 
 class MainActivity : FlutterActivity() {
 
@@ -408,17 +406,10 @@ class MainActivity : FlutterActivity() {
 
     private fun getTodayUsageStats(): Map<String, Int> {
         val usm = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        // Use Guayaquil timezone (UTC-5, no DST) so the daily counter always
-        // resets at midnight Ecuador time regardless of the device locale.
-        val cal = Calendar.getInstance(TimeZone.getTimeZone("America/Guayaquil")).apply {
-            set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0);      set(Calendar.MILLISECOND, 0)
-        }
-        return usm.queryUsageStats(
-            UsageStatsManager.INTERVAL_DAILY, cal.timeInMillis, System.currentTimeMillis()
-        )
-            .filter { it.totalTimeInForeground > 0 }
-            .associate { it.packageName to (it.totalTimeInForeground / 60_000).toInt() }
+        // Event-replay measurement (since midnight Guayaquil) shared with the
+        // native blocker so the displayed minutes and the minutes that trigger a
+        // block are always the same number.
+        return UsageQuery.foregroundMinutesTodayAll(usm)
     }
 
     override fun onNewIntent(intent: Intent) {

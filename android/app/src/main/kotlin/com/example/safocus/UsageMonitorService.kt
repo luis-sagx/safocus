@@ -26,8 +26,6 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.app.NotificationCompat
-import java.util.Calendar
-import java.util.TimeZone
 
 /**
  * Persistent ForegroundService that polls UsageStatsManager every 500 ms to:
@@ -659,21 +657,11 @@ class UsageMonitorService : Service() {
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     /**
-     * Bug 4: Compute real-time foreground usage for [packageName] today, starting
-     * from midnight in America/Guayaquil timezone, using UsageStatsManager.
+     * Real-time foreground usage for [packageName] today (since midnight
+     * Guayaquil). Delegates to [UsageQuery] — the same event-replay measurement
+     * the Flutter display uses — so an in-app countdown and a category block can
+     * never disagree (fixes the inflated 215-of-60 false block).
      */
-    private fun getRealTimeUsageMs(usm: UsageStatsManager, packageName: String): Long {
-        val cal = Calendar.getInstance(TimeZone.getTimeZone("America/Guayaquil")).apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        val stats = usm.queryUsageStats(
-            UsageStatsManager.INTERVAL_DAILY,
-            cal.timeInMillis,
-            System.currentTimeMillis()
-        )
-        return stats.find { it.packageName == packageName }?.totalTimeInForeground ?: 0L
-    }
+    private fun getRealTimeUsageMs(usm: UsageStatsManager, packageName: String): Long =
+        UsageQuery.foregroundMsTodayFor(usm, packageName)
 }
