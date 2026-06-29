@@ -20,6 +20,7 @@ abstract class AppConstants {
       'pin_hash'; // legacy key, now unused (hash stored in SecureStorage)
   static const String keyBiometricEnabled = 'biometric_enabled';
   static const String keyVpnEnabled = 'vpn_enabled';
+  static const String keyVpnCategoryDefaults = 'vpn_category_defaults_applied';
   static const String keyQuietStart = 'quiet_start';
   static const String keyQuietEnd = 'quiet_end';
   static const String keyEmergencyExtUsed = 'emergency_ext_used';

@@ -51,6 +51,7 @@ class BlockingNotifier extends StateNotifier<BlockingState> {
     final target = !state.vpnActive;
     try {
       if (target) {
+        await _applyCategoryDefaultsOnce();
         await _startVpn();
       } else {
         await _stopVpn();
@@ -61,6 +62,30 @@ class BlockingNotifier extends StateNotifier<BlockingState> {
     } catch (_) {
       return false;
     }
+  }
+
+  /// The first time the VPN is ever enabled, turn the high-risk default
+  /// categories (Adult / Betting / Clickbait) ON so the shield is meaningful
+  /// out of the box. Subsequent activations respect whatever the user has
+  /// since toggled — we never force them back on.
+  static const _defaultOnCategories = [
+    'Adulto',
+    'Apuestas / juegos',
+    'Noticias / clickbait',
+  ];
+
+  Future<void> _applyCategoryDefaultsOnce() async {
+    final storage = LocalStorage.instance;
+    if (storage.getBool(AppConstants.keyVpnCategoryDefaults)) return;
+    final sites = state.sites.map((s) {
+      if (s.isDefault && _defaultOnCategories.contains(s.category)) {
+        return s.copyWith(isActive: true);
+      }
+      return s;
+    }).toList();
+    await storage.saveBlockedSites(sites);
+    await storage.setBool(AppConstants.keyVpnCategoryDefaults, true);
+    _load();
   }
 
   Future<void> _startVpn() async {

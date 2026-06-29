@@ -327,7 +327,14 @@ class _DefaultSitesList extends StatelessWidget {
         final category = categories[i];
         final catSites = sites.where((s) => s.category == category).toList();
         final allActive = catSites.every((s) => s.isActive);
-        final isAdult = category == 'Adulto';
+        // Sensitive categories only expose the master switch — never the
+        // individual domains (avoids surfacing porn / betting URLs in the UI).
+        const hiddenSiteCategories = [
+          'Adulto',
+          'Apuestas / juegos',
+          'Noticias / clickbait',
+        ];
+        final hideSites = hiddenSiteCategories.contains(category);
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -352,7 +359,7 @@ class _DefaultSitesList extends StatelessWidget {
                 ),
               ],
             ),
-            if (!isAdult) ...[
+            if (!hideSites) ...[
               const SizedBox(height: 8),
               ...catSites.map(
                 (s) => Padding(

@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/constants/app_constants.dart';
 import 'core/theme/app_theme.dart';
 import 'data/local/local_storage.dart';
+import 'features/app_limits/providers/app_limits_provider.dart';
 import 'features/app_limits/services/limit_monitor_service.dart';
 import 'features/auth/screens/auth_screen.dart';
 import 'features/notifications/services/notification_service.dart';
@@ -105,6 +106,10 @@ class _SaFocusAppState extends ConsumerState<SaFocusApp>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       LimitMonitorService.instance.startForegroundMonitor();
+      // Re-check permissions when returning from system settings so the
+      // permission banner / onboarding buttons update immediately instead of
+      // requiring the user to re-enter the screen.
+      ref.read(appLimitsProvider.notifier).refreshPermissions();
     } else if (state == AppLifecycleState.paused) {
       LimitMonitorService.instance.stopForegroundMonitor();
     }

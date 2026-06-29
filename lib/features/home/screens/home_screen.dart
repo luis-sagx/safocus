@@ -537,7 +537,7 @@ class _BannerButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: AppColors.error,
+          color: AppColors.primary,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(

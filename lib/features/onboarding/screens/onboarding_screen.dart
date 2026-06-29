@@ -21,11 +21,47 @@ class OnboardingScreen extends StatefulWidget {
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends State<OnboardingScreen>
+    with WidgetsBindingObserver {
   final _controller = PageController();
   int _page = 0;
   int _scrollHoursPerDay = 3;
   String? _selectedIdentity;
+
+  bool _usageGranted = false;
+  bool _overlayGranted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _refreshPermissions();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Returning from the system settings screen → re-check so the buttons
+    // flip to "granted" immediately, without re-entering onboarding.
+    if (state == AppLifecycleState.resumed) _refreshPermissions();
+  }
+
+  Future<void> _refreshPermissions() async {
+    try {
+      const channel = MethodChannel(AppConstants.channelBlockControl);
+      final usage =
+          await channel.invokeMethod<bool>('hasUsagePermission') ?? false;
+      final overlay =
+          await channel.invokeMethod<bool>('hasOverlayPermission') ?? false;
+      if (mounted) {
+        setState(() {
+          _usageGranted = usage;
+          _overlayGranted = overlay;
+        });
+      }
+    } catch (_) {
+      // Non-Android / channel unavailable — leave as not granted.
+    }
+  }
 
   List<_Slide> _slides(BuildContext context) {
     final strings = AppStrings.of(context);
@@ -145,6 +181,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _controller.dispose();
     super.dispose();
   }
@@ -295,44 +332,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                   if (_page == slides.length - 1) ...[
                     const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: _openUsageSettings,
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.secondary),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: Text(
-                          strings.onboardingUsageStatsButton,
-                          style: AppTypography.labelLarge.copyWith(
-                            color: AppColors.secondary,
-                          ),
-                        ),
-                      ),
+                    _PermissionButton(
+                      label: strings.onboardingUsageStatsButton,
+                      granted: _usageGranted,
+                      onTap: _openUsageSettings,
                     ),
                     const SizedBox(height: 8),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: _openOverlaySettings,
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.secondary),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: Text(
-                          strings.onboardingOverlayButton,
-                          style: AppTypography.labelLarge.copyWith(
-                            color: AppColors.secondary,
-                          ),
-                        ),
-                      ),
+                    _PermissionButton(
+                      label: strings.onboardingOverlayButton,
+                      granted: _overlayGranted,
+                      onTap: _openOverlaySettings,
                     ),
                   ],
                 ],
@@ -540,6 +549,75 @@ class _IdentityChip extends StatelessWidget {
           style: AppTypography.labelLarge.copyWith(
             color: selected ? accent : context.colors.textSecondary,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Onboarding permission action. Pending → primary outline that opens the
+/// system settings screen. Granted → static green confirmation (no longer
+/// tappable) so the wizard visibly guides the user from "activar" to "listo".
+class _PermissionButton extends StatelessWidget {
+  const _PermissionButton({
+    required this.label,
+    required this.granted,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool granted;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
+    if (granted) {
+      return AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        decoration: BoxDecoration(
+          color: AppColors.success.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.success),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              PhosphorIconsFill.checkCircle,
+              color: AppColors.success,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                '$label · ${strings.active}',
+                style: AppTypography.labelLarge.copyWith(
+                  color: AppColors.success,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: onTap,
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: AppColors.primary),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.labelLarge.copyWith(color: AppColors.primary),
         ),
       ),
     );
