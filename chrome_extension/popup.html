@@ -7,8 +7,24 @@
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
+    <!-- ══ ONBOARDING (shown once, before first use) ═══════════════ -->
+    <section class="onboarding hidden" id="onboarding">
+      <p class="ob-title">¿Quién querés ser?</p>
+      <p class="ob-subtitle">Esto le da contexto a lo que te muestra cuando te distraés.</p>
+      <div class="ob-identity-grid" id="obIdentityGrid">
+        <button class="ob-identity" data-identity="study">📚<span>Estudiar</span></button>
+        <button class="ob-identity" data-identity="gym">💪<span>Gym</span></button>
+        <button class="ob-identity" data-identity="sleep">😴<span>Dormir temprano</span></button>
+        <button class="ob-identity" data-identity="create">🎨<span>Crear</span></button>
+      </div>
+      <p class="ob-label">¿Cuántas horas por día scrolleás sin pensar?</p>
+      <input type="number" id="obScrollHours" class="input" min="1" max="16" placeholder="ej: 3" />
+      <button class="btn-primary btn-full mt-1" id="btnObContinue">Quiero locked in</button>
+      <button class="btn-ghost-link" id="btnObSkip">Saltar por ahora</button>
+    </section>
+
     <!-- ══ HEADER ════════════════════════════════════════════════ -->
-    <header class="header">
+    <header class="header" id="mainHeader">
       <div class="logo">
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
           <circle cx="14" cy="14" r="14" fill="#6C63FF" />
@@ -33,7 +49,7 @@
     </header>
 
     <!-- ══ TABS ══════════════════════════════════════════════════ -->
-    <nav class="tabs">
+    <nav class="tabs" id="mainTabs">
       <button class="tab active" data-tab="focus">Enfoque</button>
       <button class="tab" data-tab="sites">Sitios</button>
       <button class="tab" data-tab="stats">Stats</button>
@@ -94,13 +110,13 @@
       <!-- Default sites toggle -->
       <div class="card mt-2">
         <div class="card-row">
-          <span class="card-label">Bloquear sitios predefinidos</span>
+          <span class="card-label">Incluir sitios predefinidos</span>
           <label class="toggle-wrap">
             <input type="checkbox" id="defaultSitesToggle" checked />
             <span class="toggle-track"><span class="toggle-thumb"></span></span>
           </label>
         </div>
-        <p class="card-hint">Redes sociales, adultos, streaming y más.</p>
+        <p class="card-hint">Adultos = bloqueo instantáneo. Redes/streaming = espejo del costo al rato de estar ahí. Solo aplica mientras hay sesión activa.</p>
       </div>
     </section>
 
@@ -135,9 +151,13 @@
           <span class="stat-value" id="statMinutes">0</span>
           <span class="stat-label">Min enfocado</span>
         </div>
-        <div class="stat-card wide">
+        <div class="stat-card">
+          <span class="stat-value" id="statStreak">0</span>
+          <span class="stat-label">🔥 Racha (días)</span>
+        </div>
+        <div class="stat-card">
           <span class="stat-value" id="statBlocked">0</span>
-          <span class="stat-label">Bloqueos totales</span>
+          <span class="stat-label">Distracciones evitadas</span>
         </div>
       </div>
 

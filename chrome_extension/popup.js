@@ -11,11 +11,22 @@ let state = {
     userSites: [],
     defaultSitesActive: true,
     stats: {},
+    identity: null,
+    scrollHoursPerDay: null,
+    onboardingDone: false,
 };
 let selectedMinutes = 25;
+let selectedIdentity = null;
 let timerInterval = null;
 
 // ── DOM refs ──────────────────────────────────────────────────
+const onboarding = document.getElementById('onboarding');
+const mainHeader = document.getElementById('mainHeader');
+const mainTabs = document.getElementById('mainTabs');
+const obIdentityGrid = document.getElementById('obIdentityGrid');
+const obScrollHours = document.getElementById('obScrollHours');
+const btnObContinue = document.getElementById('btnObContinue');
+const btnObSkip = document.getElementById('btnObSkip');
 const masterToggle = document.getElementById('masterToggle');
 const defaultSitesToggle = document.getElementById('defaultSitesToggle');
 const btnStartFocus = document.getElementById('btnStartFocus');
@@ -33,6 +44,7 @@ const siteList = document.getElementById('siteList');
 // Stats
 const statSessions = document.getElementById('statSessions');
 const statMinutes = document.getElementById('statMinutes');
+const statStreak = document.getElementById('statStreak');
 const statBlocked = document.getElementById('statBlocked');
 const miniChart = document.getElementById('miniChart');
 
@@ -65,17 +77,55 @@ document.querySelectorAll('.tab').forEach(tab => {
 // ── Master toggle ─────────────────────────────────────────────
 masterToggle.addEventListener('change', async () => {
     const active = masterToggle.checked;
-    await chrome.storage.local.set({ blockingEnabled: active });
-    if (active) {
-        if (state.defaultSitesActive) await send({ type: 'SET_DEFAULT_SITES_ACTIVE', active: true });
-        await send({ type: 'TOGGLE_SITE', domain: '__all__', active: true }); // re-apply all
+    const res = await send({ type: 'SET_BLOCKING_ENABLED', active });
+    if (res?.ok) {
+        state.blockingEnabled = active;
     } else {
-        // Disable blocking completely (not during a session – session always blocks)
-        if (!state.focusSession) {
-            await send({ type: 'SET_DEFAULT_SITES_ACTIVE', active: false });
-        }
+        masterToggle.checked = !active; // revert — can't change mid-session
     }
 });
+
+// ── Onboarding ───────────────────────────────────────────────
+obIdentityGrid.querySelectorAll('.ob-identity').forEach(btn => {
+    btn.addEventListener('click', () => {
+        obIdentityGrid.querySelectorAll('.ob-identity').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedIdentity = btn.dataset.identity;
+    });
+});
+
+btnObContinue.addEventListener('click', async () => {
+    const hours = parseInt(obScrollHours.value, 10);
+    await send({
+        type: 'SAVE_ONBOARDING',
+        identity: selectedIdentity,
+        scrollHoursPerDay: !isNaN(hours) && hours > 0 ? hours : null,
+    });
+    state.onboardingDone = true;
+    showMainApp();
+    renderMainApp();
+});
+
+btnObSkip.addEventListener('click', async () => {
+    await send({ type: 'SAVE_ONBOARDING', identity: null, scrollHoursPerDay: null });
+    state.onboardingDone = true;
+    showMainApp();
+    renderMainApp();
+});
+
+function showOnboarding() {
+    onboarding.classList.remove('hidden');
+    mainHeader.classList.add('hidden');
+    mainTabs.classList.add('hidden');
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+}
+
+function showMainApp() {
+    onboarding.classList.add('hidden');
+    mainHeader.classList.remove('hidden');
+    mainTabs.classList.remove('hidden');
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('hidden'));
+}
 
 // ── Default sites toggle ──────────────────────────────────────
 defaultSitesToggle.addEventListener('change', async () => {
@@ -127,12 +177,14 @@ btnStopFocus.addEventListener('click', async () => {
 function showSessionActive(durationMinutes) {
     sessionStartEl.classList.add('hidden');
     sessionActiveEl.classList.remove('hidden');
+    masterToggle.disabled = true;
     startTimerUI(durationMinutes * 60 * 1000, durationMinutes * 60 * 1000);
 }
 
 function showSessionStart() {
     sessionStartEl.classList.remove('hidden');
     sessionActiveEl.classList.add('hidden');
+    masterToggle.disabled = false;
     if (ringProg) ringProg.style.strokeDashoffset = RING_CIRCUMFERENCE;
     if (ringTime) ringTime.textContent = '--:--';
 }
@@ -254,6 +306,7 @@ function renderStats() {
     const s = state.stats || {};
     if (statSessions) statSessions.textContent = s.totalFocusSessions || 0;
     if (statMinutes) statMinutes.textContent = s.totalFocusMinutes || 0;
+    if (statStreak) statStreak.textContent = s.streakDays || 0;
     if (statBlocked) statBlocked.textContent = s.totalBlockedAttempts || 0;
 
     // Mini bar chart — last 7 days
@@ -281,14 +334,10 @@ function renderStats() {
 }
 
 // ── Initialisation ────────────────────────────────────────────
-async function init() {
-    const res = await send({ type: 'GET_STATE' });
-    if (!res?.ok) return;
-
-    state = { ...state, ...res };
-
+function renderMainApp() {
     // Master toggle
     masterToggle.checked = !!state.blockingEnabled;
+    masterToggle.disabled = !!state.focusSession;
     defaultSitesToggle.checked = !!state.defaultSitesActive;
 
     // Focus session
@@ -313,6 +362,20 @@ async function init() {
 
     renderSites();
     renderStats();
+}
+
+async function init() {
+    const res = await send({ type: 'GET_STATE' });
+    if (!res?.ok) return;
+
+    state = { ...state, ...res };
+
+    if (!state.onboardingDone) {
+        showOnboarding();
+        return;
+    }
+    showMainApp();
+    renderMainApp();
 }
 
 init();

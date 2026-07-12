@@ -13,6 +13,7 @@
     "alarms",
     "notifications",
     "tabs",
+    "scripting",
     "webNavigation",
     "declarativeNetRequest",
     "declarativeNetRequestFeedback"
@@ -33,13 +34,8 @@
     "rule_resources": [
       {
         "id": "default_block_rules",
-        "enabled": true,
-        "path": "rules/default_block_rules.json"
-      },
-      {
-        "id": "user_block_rules",
         "enabled": false,
-        "path": "rules/user_block_rules.json"
+        "path": "rules/default_block_rules.json"
       }
     ]
   },

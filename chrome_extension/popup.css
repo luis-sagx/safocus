@@ -28,6 +28,10 @@ html {
   min-height: 480px;
 }
 
+.hidden {
+  display: none !important;
+}
+
 body {
   width: var(--popup-w);
   min-height: 480px;
@@ -418,6 +422,76 @@ button:active {
 }
 .chart-bar[data-today] {
   background: var(--primary);
+}
+
+/* ── Onboarding ─────────────────────────────────────────────── */
+.onboarding {
+  padding: 1.5rem 1.25rem 1.25rem;
+}
+.onboarding.hidden {
+  display: none;
+}
+.ob-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.3rem;
+}
+.ob-subtitle {
+  font-size: 0.82rem;
+  color: var(--text-2);
+  line-height: 1.45;
+  margin-bottom: 1.1rem;
+}
+.ob-identity-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1.1rem;
+}
+.ob-identity {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.8rem 0.5rem;
+  color: var(--text-1);
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.ob-identity span {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.ob-identity.active,
+.ob-identity:hover {
+  border-color: var(--primary);
+  background: var(--primary-dim);
+}
+.ob-label {
+  font-size: 0.82rem;
+  color: var(--text-2);
+  margin-bottom: 0.5rem;
+}
+.btn-ghost-link {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--text-2);
+  font-size: 0.8rem;
+  padding: 0.6rem 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.btn-ghost-link:hover {
+  color: var(--text-1);
 }
 
 /* ── Scrollbar ──────────────────────────────────────────────── */

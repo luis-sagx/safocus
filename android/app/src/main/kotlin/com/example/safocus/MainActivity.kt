@@ -71,7 +71,21 @@ class MainActivity : FlutterActivity() {
             "com.example.safocus/apps"
         ).setMethodCallHandler { call, result ->
             when (call.method) {
-                "getInstalledApps" -> result.success(getInstalledUserApps())
+                "getInstalledApps" -> {
+                    // Icon loading/encoding is heavy; keep it off the UI thread
+                    // so navigation animations don't freeze.
+                    Thread {
+                        val apps = try {
+                            getInstalledUserApps()
+                        } catch (e: Throwable) {
+                            runOnUiThread {
+                                result.error("APPS_ERROR", e.message, null)
+                            }
+                            return@Thread
+                        }
+                        runOnUiThread { result.success(apps) }
+                    }.start()
+                }
                 else -> result.notImplemented()
             }
         }

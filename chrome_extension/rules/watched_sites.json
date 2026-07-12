@@ -1,0 +1,9 @@
+[
+  { "domain": "facebook.com", "category": "social" },
+  { "domain": "instagram.com", "category": "social" },
+  { "domain": "twitter.com", "category": "social" },
+  { "domain": "x.com", "category": "social" },
+  { "domain": "tiktok.com", "category": "social" },
+  { "domain": "reddit.com", "category": "social" },
+  { "domain": "twitch.tv", "category": "streaming" }
+]
